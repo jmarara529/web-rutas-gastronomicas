@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../api/RutasGastronomicas/auth";
-import ErrorMessage from "./ErrorMessage"; 
+import ErrorMessage from "./ErrorMessage";
+import EmailInput from "./EmailInput";
+import PasswordInput from "./PasswordInput";
 import "../styles/components/LoginForm.css";
 
 const LoginForm = () => {
@@ -29,30 +31,16 @@ const LoginForm = () => {
             <h1>Iniciar Sesión</h1>
             <ErrorMessage error={error} />  {/* 🔹 Muestra errores si hay problemas */}
             <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Correo electrónico"
+                <EmailInput
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                 />
-                <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Contraseña"
+                <PasswordInput
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
+                    showPassword={showPassword}
+                    onToggleShowPassword={() => setShowPassword(!showPassword)}
                 />
-                <div style={{ textAlign: "left", margin: "10px 0" }}>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={showPassword}
-                            onChange={() => setShowPassword(!showPassword)}
-                        />{" "}
-                        Mostrar contraseña
-                    </label>
-                </div>
                 <button type="submit">Entrar</button>
             </form>
         </div>

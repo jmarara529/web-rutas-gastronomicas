@@ -12,14 +12,6 @@
     font-size: 28px;
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-}
-
 button {
     background-color: #ff9800;
     color: white;
