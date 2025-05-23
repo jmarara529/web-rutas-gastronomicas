@@ -1,0 +1,41 @@
+.header-home-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222;
+    padding: 2vw 4vw; 
+    color: white;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2vh;
+    position: fixed;   
+    top: 0;
+    left: 0;
+    z-index: 1000;      
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links li {
+    font-size: 18px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: white;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: #ff9800;
+}

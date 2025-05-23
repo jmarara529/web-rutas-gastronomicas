@@ -1,0 +1,58 @@
+.page-container {
+    width: 100vw;
+    min-height: 100vh;
+    background-image: url("/public/images/home-background.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    box-sizing: border-box;
+    padding-top: 70px;
+    padding-bottom: 60px;
+}
+
+.page-container .content,
+.page-container .content * {
+    color: #ffffff !important;
+}
+
+.content {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    max-width: 700px;
+    width: 90%;
+    margin: 60px auto 0 auto; /* 60px de margen superior, centrado horizontal */
+    box-sizing: border-box;
+}
+
+.content h1 {
+    font-size: 32px;
+    text-align: center;
+}
+
+.content h2 {
+    font-size: 24px;
+}
+
+.content p {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.content a {
+    color: #ff9800 !important;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.content a:hover {
+    text-decoration: underline;
+}
+@media (max-height: 800px) {
+    .page-container {
+        justify-content: flex-start;
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+}
