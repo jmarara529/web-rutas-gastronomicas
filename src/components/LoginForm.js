@@ -2,45 +2,60 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../api/RutasGastronomicas/auth";
 import ErrorMessage from "./ErrorMessage";
-import EmailInput from "./EmailInput";
-import PasswordInput from "./PasswordInput";
-import "../styles/components/LoginForm.css";
+import TextInput from "./TextInput";
+import "../styles/components/form.css";
 
 const LoginForm = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false); // Nuevo estado
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(""); // 🔹 Limpiar errores previos
+        setError("");
 
         const result = await loginUser(email, password);
         if (result.error) {
             setError(result.error);
         } else {
-            localStorage.setItem("token", result.token);  // 🔹 Guardamos el token
-            navigate("/dashboard");  // 🔹 Redirigir al usuario tras el login
+            localStorage.setItem("token", result.token);
+            navigate("/dashboard");
         }
     };
 
     return (
-        <div className="login-form-container">
+        <div className="form-container">
             <h1>Iniciar Sesión</h1>
-            <ErrorMessage error={error} />  {/* 🔹 Muestra errores si hay problemas */}
+            <ErrorMessage error={error} />
             <form onSubmit={handleLogin}>
-                <EmailInput
+                <TextInput
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Correo electrónico"
+                    name="email"
+                    autoComplete="email"
+                    required
                 />
-                <PasswordInput
+                <TextInput
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    showPassword={showPassword}
-                    onToggleShowPassword={() => setShowPassword(!showPassword)}
+                    placeholder="Contraseña"
+                    name="password"
+                    autoComplete="current-password"
+                    required
                 />
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", margin: "10px 0" }}>
+                    <input
+                        type="checkbox"
+                        checked={showPassword}
+                        onChange={() => setShowPassword(!showPassword)}
+                    />
+                    Mostrar contraseña
+                </label>
                 <button type="submit">Entrar</button>
             </form>
         </div>

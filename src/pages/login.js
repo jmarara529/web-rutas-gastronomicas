@@ -2,13 +2,14 @@ import React from "react";
 import HeaderHome from "../components/HeaderHome";
 import LoginForm from "../components/LoginForm";
 import "../styles/pages/page-common.css";
+import "../styles/pages/login.css";
 
 const Login = () => {
     return (
-        <div className="page-container">
-            <HeaderHome />  {/* 🔹 Agregamos el panel superior */}
+        <div className="page-container login-page">
+            <HeaderHome />
             <div className="content">
-                <LoginForm />  {/* 🔹 Agregamos el formulario de login */}
+                <LoginForm />
             </div>
         </div>
     );

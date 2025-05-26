@@ -5,7 +5,7 @@ import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import Login from "./pages/login";
-import Register from "./pages/Register";
+import Register from "./pages/register";
 
 const App = () => {
     return (

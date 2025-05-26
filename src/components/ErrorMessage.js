@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/components/ErrorMessage.css";
+import "../styles/components/errorMessage.css";
 
 const ErrorMessage = ({ error }) => {
     if (!error) return null;

@@ -1,0 +1,6 @@
+.content a {
+    color: #ff9800;
+    text-decoration: underline;
+    font-weight: bold;
+    word-break: break-all;
+}

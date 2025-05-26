@@ -1,11 +1,12 @@
 import React from "react";
 import HeaderHome from "../components/HeaderHome";
 import "../styles/pages/page-common.css";
+import "../styles/pages/privacy.css";
 
 const Privacy = () => {
     return (
         <div className="page-container">
-            <HeaderHome />  {/* 🔹 Agregamos el panel superior */}
+            <HeaderHome />
             <div className="content">
                 <h1>Política de Privacidad</h1>
                 <p>

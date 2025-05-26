@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../api/RutasGastronomicas/auth";
-import EmailInput from "./EmailInput";
-import PasswordInput from "./PasswordInput";
-import "../styles/components/RegisterForm.css";
+import ErrorMessage from "./ErrorMessage";
+import TextInput from "./TextInput";
+import "../styles/components/form.css";
 
 const RegisterForm = () => {
     const [nombre, setNombre] = useState("");
@@ -28,29 +28,46 @@ const RegisterForm = () => {
     };
 
     return (
-        <div className="register-form-container">
+        <div className="form-container">
             <h1>Registro de Usuario</h1>
-            {error && <div className="error-message">{error}</div>}
+            <ErrorMessage error={error} />
             {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit}>
-                <input
+                <TextInput
                     type="text"
-                    placeholder="Nombre"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
+                    placeholder="Nombre"
+                    name="nombre"
+                    autoComplete="name"
                     required
-                    className="nombre-input"
                 />
-                <EmailInput
+                <TextInput
+                    type="email"
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
+                    placeholder="Correo electrónico"
+                    name="correo"
+                    autoComplete="email"
+                    required
                 />
-                <PasswordInput
+                <TextInput
+                    type={showPassword ? "text" : "password"}
                     value={contraseña}
                     onChange={(e) => setContraseña(e.target.value)}
-                    showPassword={showPassword}
-                    onToggleShowPassword={() => setShowPassword(!showPassword)}
+                    placeholder="Contraseña"
+                    name="contraseña"
+                    autoComplete="new-password"
+                    required
                 />
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", margin: "10px 0" }}>
+                    <input
+                        type="checkbox"
+                        checked={showPassword}
+                        onChange={() => setShowPassword(!showPassword)}
+                    />
+                    Mostrar contraseña
+                </label>
                 <button type="submit">Registrarse</button>
             </form>
         </div>
