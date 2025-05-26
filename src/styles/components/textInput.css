@@ -16,3 +16,17 @@
     border: 2px solid #ff9800;
     box-shadow: 0 0 4px #ff980033;
 }
+
+@media (max-width: 800px) {
+    .text-input {
+        font-size: 15px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 500px) {
+    .text-input {
+        font-size: 14px;
+        padding: 6px;
+    }
+}

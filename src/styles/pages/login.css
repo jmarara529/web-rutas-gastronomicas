@@ -3,3 +3,9 @@
     box-shadow: none;
     padding: 0;
 }
+
+@media (max-width: 800px) {
+    .page-container.login-page .content {
+        padding: 0;
+    }
+}

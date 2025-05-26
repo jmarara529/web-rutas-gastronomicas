@@ -44,6 +44,14 @@ body, html {
 }
 
 @media (max-width: 800px) {
+    .page-container {
+        padding-top: 60px;
+        padding-bottom: 20px;
+    }
+    .content {
+        padding: 14px;
+        max-width: 98vw;
+    }
     .content {
         padding: 18px;
         font-size: 16px;
@@ -53,5 +61,16 @@ body, html {
     }
     .content h2 {
         font-size: 18px;
+    }
+}
+
+@media (max-width: 500px) {
+    .page-container {
+        padding-top: 40px;
+        padding-bottom: 10px;
+    }
+    .content {
+        padding: 8px;
+        border-radius: 6px;
     }
 }

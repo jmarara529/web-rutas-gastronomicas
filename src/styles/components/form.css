@@ -62,3 +62,33 @@
     text-align: center;
     box-sizing: border-box;
 }
+
+@media (max-width: 800px) {
+    .form-container {
+        max-width: 98vw;
+        margin: 30px auto;
+        padding: 12px 2vw;
+        border-radius: 8px;
+    }
+    .form-container h1 {
+        font-size: 22px;
+    }
+    .form-container button[type="submit"] {
+        font-size: 16px;
+        padding: 10px 0;
+    }
+}
+
+@media (max-width: 500px) {
+    .form-container {
+        padding: 8px 1vw;
+        border-radius: 6px;
+    }
+    .form-container h1 {
+        font-size: 18px;
+    }
+    .form-container button[type="submit"] {
+        font-size: 15px;
+        padding: 8px 0;
+    }
+}

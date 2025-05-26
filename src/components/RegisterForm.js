@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../api/RutasGastronomicas/auth";
+import { registerUser, loginUser } from "../api/RutasGastronomicas/auth";
 import ErrorMessage from "./ErrorMessage";
 import TextInput from "./TextInput";
 import "../styles/components/form.css";
@@ -19,11 +19,19 @@ const RegisterForm = () => {
         setError("");
         setSuccess("");
         const result = await registerUser(nombre, correo, contraseña);
+        console.log(result); 
+
         if (result.success) {
-            setSuccess("Usuario registrado correctamente. Redirigiendo...");
-            setTimeout(() => navigate("/login"), 2000);
+            // Registro exitoso, iniciar sesión automáticamente
+            const loginResult = await loginUser(correo, contraseña);
+            if (loginResult.error) {
+                setError("Registro correcto, pero error al iniciar sesión: " + loginResult.error);
+            } else {
+                localStorage.setItem("token", loginResult.token);
+                navigate("/dashboard");
+            }
         } else {
-            setError(result.error);
+            setError(result.error || result.msg || "Error desconocido en el registro.");
         }
     };
 

@@ -27,6 +27,7 @@ export const registerUser = async (nombre, email, password) => {
         return response.data;
     } catch (error) {
         console.error("Error en el registro:", error);
-        return { error: error.response?.data?.msg || "Error desconocido" };
+        // Devuelve primero el campo 'error', luego 'msg', luego un mensaje genérico
+        return { error: error.response?.data?.error || error.response?.data?.msg || "Error desconocido" };
     }
 };
