@@ -66,7 +66,7 @@
 @media (max-width: 800px) {
     .form-container {
         max-width: 98vw;
-        margin: 30px auto;
+        margin: 40px auto 0 auto;
         padding: 12px 2vw;
         border-radius: 8px;
     }
@@ -83,6 +83,7 @@
     .form-container {
         padding: 8px 1vw;
         border-radius: 6px;
+        margin: 40px auto 0 auto;
     }
     .form-container h1 {
         font-size: 18px;

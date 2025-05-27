@@ -21,7 +21,8 @@ const LoginForm = () => {
             setError(result.error);
         } else {
             localStorage.setItem("token", result.token);
-            navigate("/dashboard");
+            localStorage.setItem("es_admin", result.es_admin); // Guarda si es admin
+            navigate("/search");
         }
     };
 
