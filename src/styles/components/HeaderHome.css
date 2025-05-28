@@ -131,6 +131,34 @@
     }
 }
 
+/* Mostrar menú hamburguesa y ocultar nav-links solo cuando realmente no caben las opciones */
+@media (max-width: 1100px) {
+    .nav-links {
+        gap: 12px;
+    }
+    .logo {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 900px) {
+    .nav-links {
+        gap: 4px;
+    }
+    .logo {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 700px) {
+    .nav-links {
+        display: none;
+    }
+    .menu-toggle {
+        display: block;
+    }
+}
+
 @media (max-width: 500px) {
     .header-home-container {
         padding: 0 !important;

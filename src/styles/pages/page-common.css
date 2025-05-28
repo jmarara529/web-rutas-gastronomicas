@@ -1,10 +1,22 @@
-body, html {
+html, body {
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
     overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 .page-container {
     width: 100%;
     min-height: 100vh;
+    /* Eliminar height: 100% para evitar scroll fantasma, solo dejar min-height */
     background-image: url("/public/images/home-background.png");
     background-size: cover;
     background-position: center;
@@ -12,6 +24,7 @@ body, html {
     box-sizing: border-box;
     padding-top: 80px; /* Espacio para el header fijo */
     padding-bottom: 40px;
+    margin: 0;
 }
 
 .content {
@@ -45,15 +58,17 @@ body, html {
 
 @media (max-width: 800px) {
     .page-container {
-        padding-top: 0;
+        padding-top: 56px; /* Mantener espacio para header fijo (ajustado a headerHome.css) */
         padding-bottom: 20px;
         padding-left: 8px;
         padding-right: 8px;
+        min-height: calc(100vh - 20px); /* Ajuste para evitar scroll extra */
+        /* Eliminar height: 100% aquí también */
     }
     .content {
         padding: 14px;
         max-width: 98vw;
-        margin-top: 40px;
+        margin-top: 24px; /* Menor separación en móvil */
         font-size: 16px;
     }
     .content h1 {
@@ -62,18 +77,94 @@ body, html {
     .content h2 {
         font-size: 18px;
     }
+    .content form input[type="text"] {
+        max-width: 100%;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+        margin-bottom: 8px;
+        background: #222;
+        color: #fff;
+        border: 1.5px solid #ff9800;
+        transition: border 0.2s;
+    }
+    .content form input[type="text"]:focus {
+        outline: none;
+        border: 2px solid #ff9800;
+        background: #181818;
+        color: #fff;
+    }
+    .content form input[type="number"] {
+        background: #222;
+        color: #fff;
+        border: 1.5px solid #ff9800;
+        border-radius: 5px;
+        padding: 6px 8px;
+        margin-top: 4px;
+    }
+    .content form label {
+        color: #ff9800;
+        font-weight: 500;
+    }
+    .content form button {
+        background: #ff9800;
+        color: #222;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 0;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 8px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .content form button:hover {
+        background: #fff;
+        color: #ff9800;
+    }
+    .content form > div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .content form input[type="text"] {
+        max-width: 100%;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+    }
+    .content form {
+        margin: 16px 0;
+    }
 }
 
 @media (max-width: 500px) {
     .page-container {
-        padding-top: 0;
+        padding-top: 48px; /* Altura mínima del header en móvil */
         padding-bottom: 10px;
         padding-left: 4px;
         padding-right: 4px;
+        min-height: calc(100vh - 10px); /* Ajuste para evitar scroll extra */
+        /* Eliminar height: 100% aquí también */
     }
     .content {
         padding: 8px;
         border-radius: 6px;
-        margin-top: 40px;
+        margin-top: 16px;
+    }
+    .content form input[type="text"] {
+        font-size: 14px;
+        padding: 8px;
+    }
+    .content form button {
+        font-size: 14px;
+        padding: 8px;
     }
 }

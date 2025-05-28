@@ -7,6 +7,7 @@ import Contact from "./pages/Contact";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Search from "./pages/Search";
+import PlacePage from "./pages/PlacePage";
 
 const App = () => {
     return (
@@ -19,6 +20,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/search" element={<Search />} />
+                <Route path="/sitio/:placeId" element={<PlacePage />} />
             </Routes>
         </Router>
     );

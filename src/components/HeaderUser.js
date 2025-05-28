@@ -19,7 +19,7 @@ const HeaderUser = ({ isAdmin }) => {
                 <span className="menu-icon">☰</span>
             </button>
             <ul className={`nav-links${menuOpen ? " open" : ""}`} onClick={handleClose}>
-                <li><Link to="/buscador">Buscador</Link></li>
+                <li><Link to="/search">Buscador</Link></li>
                 <li><Link to="/favoritos">Favoritos</Link></li>
                 <li><Link to="/mis-reseñas">Mis Reseñas</Link></li>
                 <li><Link to="/lugares-visitados">Lugares Visitados</Link></li>
