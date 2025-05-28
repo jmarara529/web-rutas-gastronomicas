@@ -1,12 +1,19 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/components/headerHome.css";
 
 const HeaderUser = ({ isAdmin }) => {
+    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
 
     const handleToggle = () => setMenuOpen((open) => !open);
     const handleClose = () => setMenuOpen(false);
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("es_admin");
+        localStorage.removeItem("user_id");
+        navigate("/");
+    };
 
     return (
         <nav className="header-home-container">
@@ -26,7 +33,9 @@ const HeaderUser = ({ isAdmin }) => {
                 <li><Link to="/perfil">Perfil</Link></li>
                 {isAdmin && <li><Link to="/historial-eliminaciones">Historial de Eliminaciones</Link></li>}
                 {isAdmin && <li><Link to="/administrar-usuarios">administrar usuarios</Link></li>}
-                <li><Link to="/logout">Cerrar Sesión</Link></li>
+                <span className="header-user-link" onClick={handleLogout} tabIndex={0} role="button" style={{ cursor: 'pointer' }}>
+                  Cerrar sesión
+                </span>
             </ul>
         </nav>
     );

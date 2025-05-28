@@ -72,6 +72,11 @@ const Search = () => {
         e.preventDefault();
         setLoading(true);
         setErrorMsg("");
+        if (!query.trim()) {
+            setErrorMsg("El campo de búsqueda es obligatorio");
+            setLoading(false);
+            return;
+        }
         try {
             let loc = location;
             let searchQuery = query;
@@ -81,6 +86,9 @@ const Search = () => {
                 const [lat, lng] = query.split(",").map(v => parseFloat(v));
                 loc = { lat, lng };
                 searchQuery = "";
+            } else {
+                // Si no es coordenada, buscar por nombre, calle o pueblo
+                loc = null;
             }
             const data = await fetchPlaces({ query: searchQuery, location: loc, radius, types });
             setResults(data.results || []);

@@ -197,6 +197,76 @@
   color: #ff9800;
   text-decoration: underline;
 }
+.reviews-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.review-google, .review-app {
+  background: #232323;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  position: relative;
+}
+.review-app button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #ff9800;
+}
+.review-app .review-menu {
+  position: absolute;
+  top: 24px;
+  right: 0;
+  background: #232323;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  z-index: 10;
+  min-width: 100px;
+}
+.review-app .review-menu div {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.review-app .review-menu div:hover {
+  background: #ff9800;
+  color: #181818;
+}
+.review-app .review-menu .delete {
+  color: #e53935;
+}
+.tabs-container {
+  margin-top: 32px;
+}
+.tabs-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tab-btn {
+  background: #181818;
+  color: #ff9800;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+.tab-btn.active, .tab-btn:hover {
+  background: #ff9800;
+  color: #181818;
+}
+.tabs-content {
+  background: #232323;
+  border-radius: 0 0 12px 12px;
+  padding: 18px 12px;
+  min-height: 80px;
+}
 @media (max-width: 600px) {
     .search-form input[type="text"],
     .search-form input[type="number"] {
