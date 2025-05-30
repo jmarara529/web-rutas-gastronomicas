@@ -10,6 +10,9 @@ const PlacePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Obtener si es admin desde localStorage
+  const isAdmin = localStorage.getItem("es_admin") === "true";
+
   useEffect(() => {
     const fetchPlace = async () => {
       setLoading(true);
@@ -35,7 +38,7 @@ const PlacePage = () => {
 
   return (
     <div className="page-container">
-      <HeaderUser />
+      <HeaderUser isAdmin={isAdmin} />
       <div className="content">
         {loading ? (
           <div>Cargando...</div>

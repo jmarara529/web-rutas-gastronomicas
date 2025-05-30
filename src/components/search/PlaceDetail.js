@@ -227,9 +227,6 @@ const PlaceDetail = ({ place }) => {
     lng = place.geometry.location.lng;
   }
 
-  // URL para Google Maps
-  const mapsUrl = lat && lng ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : null;
-
   // Componente de estrellas dinámicas para calificar
   function StarRating({ value, onChange }) {
     const [hover, setHover] = useState(null);
@@ -349,31 +346,6 @@ const PlaceDetail = ({ place }) => {
               <b>El mapa no se puede mostrar.</b><br />
               Verifica que tu clave de Google Maps Platform tiene permisos para Maps Embed API.
             </div>
-          )}
-          {mapsUrl && (
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                position: "absolute",
-                bottom: 16,
-                right: 16,
-                background: "#fff",
-                borderRadius: "50%",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-                width: 56,
-                height: 56,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 2,
-                textDecoration: "none"
-              }}
-              title="Abrir en Google Maps"
-            >
-              <img src="/images/google-maps-icon.png" alt="Abrir en Google Maps" style={{ width: 36, height: 36 }} />
-            </a>
           )}
         </div>
       )}
