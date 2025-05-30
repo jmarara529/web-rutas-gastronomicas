@@ -2,7 +2,7 @@ import React from "react";
 import HeaderHome from "../components/HeaderHome";
 import AuthButton from "../components/AuthButtons";
 import "../styles/pages/page-common.css";
-import "../styles/pages/home.css";
+import "../styles/pages/Home.css";
 
 const Home = () => {
     return (

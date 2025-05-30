@@ -43,6 +43,9 @@ const PlaceDetail = ({ place }) => {
   const [editReviewText, setEditReviewText] = useState("");
   const [editReviewStars, setEditReviewStars] = useState(0);
 
+  // --- NUEVO: obtener URL del iframe del backend ---
+  const [embedUrl, setEmbedUrl] = useState(null);
+
   useEffect(() => {
     if (!place) return;
     // Obtener la URL de la foto para legacy y para API New
@@ -82,6 +85,28 @@ const PlaceDetail = ({ place }) => {
       .then(data => setAppReviews(data))
       .catch(() => setAppReviews([]))
       .finally(() => setReviewsLoading(false));
+  }, [place]);
+
+  // --- NUEVO: efecto para pedir el embedUrl ---
+  useEffect(() => {
+    if (!place) return setEmbedUrl(null);
+    // Obtener coordenadas para el mapa
+    let lat = null, lng = null;
+    const name = place.displayName?.text || place.name || "Sin nombre";
+    if (place.location && place.location.latitude && place.location.longitude) {
+      lat = place.location.latitude;
+      lng = place.location.longitude;
+    } else if (place.geometry && place.geometry.location) {
+      lat = place.geometry.location.lat;
+      lng = place.geometry.location.lng;
+    }
+    if (lat && lng) {
+      axios.get('https://security-killer.ddns.net:3443/api/maps/embed', { params: { lat, lng, q: name } })
+        .then(res => setEmbedUrl(res.data.url))
+        .catch(() => setEmbedUrl(null));
+    } else {
+      setEmbedUrl(null);
+    }
   }, [place]);
 
   function sortReviews(reviews, sortType, isGoogle = false) {
@@ -307,11 +332,24 @@ const PlaceDetail = ({ place }) => {
       {/* Mapa y botón de navegación */}
       {lat && lng && (
         <div style={{ position: "relative", margin: "24px 0" }}>
-          {/* Mensaje de error si el mapa no carga por permisos */}
-          <div style={{ background: '#2a2a2a', borderRadius: 12, padding: 16, textAlign: 'center', color: '#ff9800', marginBottom: 8 }}>
-            <b>El mapa no se puede mostrar.</b><br />
-            Verifica que tu clave de Google Maps Platform tiene permisos para Maps Embed API.
-          </div>
+          {/* Mapa embebido si está disponible */}
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              width="100%"
+              height="300"
+              style={{ border: 0, borderRadius: 12 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Mapa"
+            />
+          ) : (
+            <div style={{ background: '#2a2a2a', borderRadius: 12, padding: 16, textAlign: 'center', color: '#ff9800', marginBottom: 8 }}>
+              <b>El mapa no se puede mostrar.</b><br />
+              Verifica que tu clave de Google Maps Platform tiene permisos para Maps Embed API.
+            </div>
+          )}
           {mapsUrl && (
             <a
               href={mapsUrl}

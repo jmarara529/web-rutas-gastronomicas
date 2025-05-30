@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/components/headerHome.css";
+import "../styles/components/HeaderHome.css";
 
 const HeaderUser = ({ isAdmin }) => {
     const navigate = useNavigate();

@@ -8,19 +8,38 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Search from "./pages/Search";
 import PlacePage from "./pages/PlacePage";
+import PrivateRoute from "./components/PrivateRoute";
+
+// Define rutas públicas y privadas
+const publicRoutes = [
+    { path: "/", element: <Home /> },
+    { path: "/home", element: <Home /> },
+    { path: "/about", element: <About /> },
+    { path: "/privacy", element: <Privacy /> },
+    { path: "/contact", element: <Contact /> },
+    { path: "/login", element: <Login /> },
+    { path: "/register", element: <Register /> }
+];
+
+const privateRoutes = [
+    { path: "/search", element: <Search /> },
+    { path: "/sitio/:placeId", element: <PlacePage /> }
+];
 
 const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/sitio/:placeId" element={<PlacePage />} />
+                {publicRoutes.map(({ path, element }) => (
+                    <Route key={path} path={path} element={element} />
+                ))}
+                {privateRoutes.map(({ path, element }) => (
+                    <Route
+                        key={path}
+                        path={path}
+                        element={<PrivateRoute>{element}</PrivateRoute>}
+                    />
+                ))}
             </Routes>
         </Router>
     );
