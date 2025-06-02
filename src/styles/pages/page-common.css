@@ -77,36 +77,6 @@ body {
     .content h2 {
         font-size: 18px;
     }
-    .content form input[type="text"] {
-        max-width: 100%;
-        min-width: 0;
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 15px;
-        margin-bottom: 8px;
-        background: #222;
-        color: #fff;
-        border: 1.5px solid #ff9800;
-        transition: border 0.2s;
-    }
-    .content form input[type="text"]:focus {
-        outline: none;
-        border: 2px solid #ff9800;
-        background: #181818;
-        color: #fff;
-    }
-    .content form input[type="number"] {
-        background: #222;
-        color: #fff;
-        border: 1.5px solid #ff9800;
-        border-radius: 5px;
-        padding: 6px 8px;
-        margin-top: 4px;
-    }
-    .content form label {
-        color: #ff9800;
-        font-weight: 500;
-    }
     .content form button {
         background: #ff9800;
         color: #222;
@@ -133,13 +103,6 @@ body {
 }
 
 @media (max-width: 600px) {
-    .content form input[type="text"] {
-        max-width: 100%;
-        min-width: 0;
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 15px;
-    }
     .content form {
         margin: 16px 0;
     }
@@ -158,10 +121,6 @@ body {
         padding: 8px;
         border-radius: 6px;
         margin-top: 16px;
-    }
-    .content form input[type="text"] {
-        font-size: 14px;
-        padding: 8px;
     }
     .content form button {
         font-size: 14px;

@@ -1,0 +1,14 @@
+.searchinput-resenas {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ff9800;
+  background: #181818;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  transition: border 0.2s;
+}
+.searchinput-resenas:focus {
+  border: 1.5px solid #fff;
+}

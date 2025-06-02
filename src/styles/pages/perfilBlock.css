@@ -1,0 +1,41 @@
+.perfil-block {
+  background: #181818;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0002;
+  margin-bottom: 32px;
+  padding: 24px 20px 20px 20px;
+  transition: box-shadow 0.2s;
+  color: #fff; /* Asegura texto blanco en todos los bloques */
+}
+.perfil-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.perfil-block-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #ff9800;
+  letter-spacing: 0.5px;
+}
+.perfil-block-action {
+  margin-left: 16px;
+}
+.perfil-block-content {
+  min-height: 32px;
+  color: #fff; /* Fuerza texto blanco en el contenido */
+}
+.perfil-block label, .perfil-block b, .perfil-block div {
+  color: #fff;
+}
+.perfil-block input, .perfil-block input.text-input {
+  color: #000 !important;
+  background: #fff !important;
+  caret-color: #000 !important;
+}
+@media (max-width: 600px) {
+  .perfil-block {
+    padding: 16px 8px 12px 8px;
+  }
+}

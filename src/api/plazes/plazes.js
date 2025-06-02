@@ -1,7 +1,8 @@
 // src/api/plazes/plazes.js
 import axios from "axios";
 
-const API_URL = "https://security-killer.ddns.net:3443/api/places"; // Ajusta el puerto si tu backend usa otro
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = `${API_BASE_URL}/places`;
 
 // Busca lugares por texto (nombre de calle, ciudad, etc.)
 export const searchPlacesByText = async (query) => {

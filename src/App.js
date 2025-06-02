@@ -9,6 +9,9 @@ import Register from "./pages/register";
 import Search from "./pages/Search";
 import PlacePage from "./pages/PlacePage";
 import PrivateRoute from "./components/PrivateRoute";
+import Perfil from "./pages/perfil"; // Asegúrate de que la ruta de importación sea correcta
+import MisResenas from "./pages/MisResenas";
+import LugaresVisitados from "./pages/LugaresVisitados";
 
 // Define rutas públicas y privadas
 const publicRoutes = [
@@ -23,7 +26,10 @@ const publicRoutes = [
 
 const privateRoutes = [
     { path: "/search", element: <Search /> },
-    { path: "/sitio/:placeId", element: <PlacePage /> }
+    { path: "/sitio/:placeId", element: <PlacePage /> },
+    { path: "/perfil", element: <Perfil /> },
+    { path: "/mis-reseñas", element: <MisResenas /> },
+    { path: "/lugares-visitados", element: <LugaresVisitados /> }
 ];
 
 const App = () => {

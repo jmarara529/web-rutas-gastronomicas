@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import Tabs from "../Tabs";
 import { addReview, getReviews } from "../../api/plazes/reviews";
 import axios from "axios";
+import { addFavorite } from "../../api/plazes/addFavorite";
+import { getVisitados, addVisitado, removeVisitado } from "../../api/plazes/visitados";
+import { getLugarId } from "../../api/plazes/getLugarId";
 import "../../styles/pages/search.css";
 
 const PlaceDetail = ({ place }) => {
@@ -45,6 +48,8 @@ const PlaceDetail = ({ place }) => {
 
   // --- NUEVO: obtener URL del iframe del backend ---
   const [embedUrl, setEmbedUrl] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isVisitado, setIsVisitado] = useState(false);
 
   useEffect(() => {
     if (!place) return;
@@ -101,12 +106,46 @@ const PlaceDetail = ({ place }) => {
       lng = place.geometry.location.lng;
     }
     if (lat && lng) {
-      axios.get('https://security-killer.ddns.net:3443/api/maps/embed', { params: { lat, lng, q: name } })
+      axios.get(`${process.env.REACT_APP_API_BASE_URL}/maps/embed`, { params: { lat, lng, q: name } })
         .then(res => setEmbedUrl(res.data.url))
         .catch(() => setEmbedUrl(null));
     } else {
       setEmbedUrl(null);
     }
+  }, [place]);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      const token = localStorage.getItem("token");
+      // Comprobar favoritos
+      try {
+        const favRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/favoritos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Normalizar place_id para comparación robusta
+        const currentPlaceId = (place.id || place.place_id || "").toString().trim().toLowerCase();
+        let isFav = false;
+        for (const f of favRes.data) {
+          // Comprobar por place_id
+          if ((f.place_id || "").toString().trim().toLowerCase() === currentPlaceId) {
+            isFav = true;
+            break;
+          }
+          // Comprobar por id_lugar si está disponible
+          if (f.id && place.id && String(f.id) === String(place.id)) {
+            isFav = true;
+            break;
+          }
+        }
+        setIsFavorite(isFav);
+      } catch {}
+      // Comprobar visitados
+      try {
+        const visRes = await getVisitados(token);
+        setIsVisitado(!!visRes.find(v => v.place_id === (place.id || place.place_id)));
+      } catch {}
+    };
+    if (place && (place.id || place.place_id)) fetchStates();
   }, [place]);
 
   function sortReviews(reviews, sortType, isGoogle = false) {
@@ -162,7 +201,7 @@ const PlaceDetail = ({ place }) => {
     setReviewError("");
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://security-killer.ddns.net:3443/api/resenas/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Recargar reseñas
@@ -188,7 +227,7 @@ const PlaceDetail = ({ place }) => {
     setReviewError("");
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`https://security-killer.ddns.net:3443/api/resenas/${editReviewId}`, {
+      await axios.put(`${process.env.REACT_APP_API_BASE_URL}/resenas/${editReviewId}`, {
         calificacion: editReviewStars,
         comentario: editReviewText
       }, {
@@ -211,6 +250,43 @@ const PlaceDetail = ({ place }) => {
     setEditReviewId(null);
     setEditReviewText("");
     setEditReviewStars(0);
+  };
+
+  const handleFavorite = async () => {
+    const token = localStorage.getItem("token");
+    if (!isFavorite) {
+      await addFavorite(place, token);
+      setIsFavorite(true);
+    } else {
+      // Obtener id_lugar antes de eliminar
+      try {
+        const id_lugar = await getLugarId(place.id || place.place_id, token);
+        await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/favoritos/${id_lugar}`,
+          { headers: { Authorization: `Bearer ${token}` } });
+        setIsFavorite(false);
+      } catch (err) {
+        // Feedback opcional: error al eliminar favorito
+        alert("No se pudo eliminar de favoritos");
+      }
+    }
+  };
+
+  const handleVisitado = async () => {
+    const token = localStorage.getItem("token");
+    if (!isVisitado) {
+      await addVisitado(place, token);
+      setIsVisitado(true);
+    } else {
+      // Obtener id_lugar antes de eliminar
+      try {
+        const id_lugar = await getLugarId(place.id || place.place_id, token);
+        await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/visitados/${id_lugar}`,
+          { headers: { Authorization: `Bearer ${token}` } });
+        setIsVisitado(false);
+      } catch (err) {
+        alert("No se pudo eliminar de visitados");
+      }
+    }
   };
 
   if (!place) return <div>No hay datos del sitio.</div>;
@@ -292,14 +368,7 @@ const PlaceDetail = ({ place }) => {
                   />
                   <div style={{ marginBottom: 8 }}>
                     <span>Calificación: </span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={editReviewStars}
-                      onChange={e => setEditReviewStars(Number(e.target.value))}
-                      style={{ width: 40 }}
-                    />
+                    <StarRating value={editReviewStars} onChange={setEditReviewStars} />
                   </div>
                   <button onClick={handleEditSave} disabled={reviewSubmitting} style={{ marginRight: 8 }}>Guardar</button>
                   <button onClick={handleEditCancel} disabled={reviewSubmitting}>Cancelar</button>
@@ -349,6 +418,14 @@ const PlaceDetail = ({ place }) => {
           )}
         </div>
       )}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+        <button className="btn" onClick={handleFavorite} style={{ background: isFavorite ? '#e53935' : '#ff9800', color: '#fff' }}>
+          {isFavorite ? 'Eliminar de favoritos' : 'Añadir a favoritos'}
+        </button>
+        <button className="btn" onClick={handleVisitado} style={{ background: isVisitado ? '#388e3c' : '#ff9800', color: '#fff' }}>
+          {isVisitado ? 'Eliminar de visitados' : 'Marcar como visitado'}
+        </button>
+      </div>
       {/* Aquí irá la pestaña de comentarios */}
       <Tabs
         tabs={[

@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const API_URL = "https://security-killer.ddns.net:3443/api"; 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = `${API_BASE_URL}/auth`;
 
 //función para logear usuario
 export const loginUser = async (email, password) => {
     try {
-        const response = await axios.post(`${API_URL}/auth/login`, {
+        const response = await axios.post(`${API_URL}/login`, {
             correo: email,
             contraseña: password,
         });
@@ -19,7 +20,7 @@ export const loginUser = async (email, password) => {
 //función para registrar usuario
 export const registerUser = async (nombre, email, password) => {
     try {
-        const response = await axios.post(`${API_URL}/auth/register`, {
+        const response = await axios.post(`${API_URL}/register`, {
             nombre,
             correo: email,
             contraseña: password,

@@ -20,7 +20,7 @@ const PlacePage = () => {
       try {
         // Llama a tu backend para obtener detalles de Google Places
         const response = await axios.get(
-          `https://security-killer.ddns.net:3443/api/places/detalles`,
+          `${process.env.REACT_APP_API_BASE_URL}/places/detalles`,
           { params: { place_id: placeId } }
         );
         if (response.data && response.data.result) {

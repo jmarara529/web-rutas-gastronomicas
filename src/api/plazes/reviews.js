@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "https://security-killer.ddns.net:3443/api/resenas";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = `${API_BASE_URL}/resenas`;
 
 export const addReview = async ({ place_id, calificacion, comentario }, token) => {
   const response = await axios.post(

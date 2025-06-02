@@ -1,39 +1,36 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser } from "../api/RutasGastronomicas/auth";
+import DynamicUserForm from "./DynamicUserForm";
 import ErrorMessage from "./ErrorMessage";
-import TextInput from "./TextInput";
 import "../styles/components/form.css";
 
 const RegisterForm = () => {
-    const [nombre, setNombre] = useState("");
-    const [correo, setCorreo] = useState("");
-    const [contraseña, setContraseña] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (form) => {
         setError("");
         setSuccess("");
-        const result = await registerUser(nombre, correo, contraseña);
-        console.log(result); 
-
+        setLoading(true);
+        const result = await registerUser(form.nombre, form.correo, form.password);
         if (result.success) {
             // Registro exitoso, iniciar sesión automáticamente
-            const loginResult = await loginUser(correo, contraseña);
+            const loginResult = await loginUser(form.correo, form.password);
             if (loginResult.error) {
                 setError("Registro correcto, pero error al iniciar sesión: " + loginResult.error);
             } else {
                 localStorage.setItem("token", loginResult.token);
-                localStorage.setItem("es_admin", result.es_admin);
+                localStorage.setItem("es_admin", loginResult.es_admin);
+                localStorage.setItem("user_id", loginResult.id); // <-- Asegura guardar el id
                 navigate("/search");
             }
         } else {
             setError(result.error || result.msg || "Error desconocido en el registro.");
         }
+        setLoading(false);
     };
 
     return (
@@ -41,44 +38,17 @@ const RegisterForm = () => {
             <h1>Registro de Usuario</h1>
             <ErrorMessage error={error} />
             {success && <div className="success-message">{success}</div>}
-            <form onSubmit={handleSubmit}>
-                <TextInput
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Nombre"
-                    name="nombre"
-                    autoComplete="name"
-                    required
-                />
-                <TextInput
-                    type="email"
-                    value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
-                    placeholder="Correo electrónico"
-                    name="correo"
-                    autoComplete="email"
-                    required
-                />
-                <TextInput
-                    type={showPassword ? "text" : "password"}
-                    value={contraseña}
-                    onChange={(e) => setContraseña(e.target.value)}
-                    placeholder="Contraseña"
-                    name="contraseña"
-                    autoComplete="new-password"
-                    required
-                />
-                <label style={{ display: "flex", alignItems: "center", gap: "8px", margin: "10px 0" }}>
-                    <input
-                        type="checkbox"
-                        checked={showPassword}
-                        onChange={() => setShowPassword(!showPassword)}
-                    />
-                    Mostrar contraseña
-                </label>
-                <button type="submit">Registrarse</button>
-            </form>
+            <DynamicUserForm
+                fields={[
+                  { name: "nombre", label: "Nombre", type: "text", required: true, autoComplete: "name" },
+                  { name: "correo", label: "Correo", type: "email", required: true, autoComplete: "email" },
+                  { name: "password", label: "Contraseña", type: "password", required: true, autoComplete: "new-password" }
+                ]}
+                onSubmit={handleSubmit}
+                loading={loading}
+                error={error}
+                submitText="Registrarse"
+            />
         </div>
     );
 };
