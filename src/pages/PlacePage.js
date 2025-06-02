@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import PlaceDetail from "../components/search/PlaceDetail";
+import PlaceDetail from "../components/PlaceDetail";
 import HeaderUser from "../components/HeaderUser";
 import axios from "axios";
 

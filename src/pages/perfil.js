@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
-import PerfilPlaceCard from "../components/PerfilPlaceCard";
 import PerfilBlock from "../components/PerfilBlock";
 import "../styles/pages/page-common.css";
 import "../styles/pages/search.css";
@@ -8,6 +7,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
 import ReviewList from "../components/ReviewList";
+import PlaceCard from "../components/PlaceCard";
 
 const Perfil = () => {
   const [user, setUser] = useState({ nombre: "", correo: "" });
@@ -253,7 +253,7 @@ const Perfil = () => {
             <PerfilBlock title="Lugares visitados" action={<button className="btn" onClick={() => navigate("/lugares-visitados")}>Ver más</button>}>
               <div className="perfil-places-list">
                 {visitados.slice(0, 3).map((v, i) => (
-                  <PerfilPlaceCard key={i} place={v} onClick={() => handlePlaceClick(v)} />
+                  <PlaceCard key={i} place={v} onClick={() => handlePlaceClick(v)} fechaVisita={v.fecha_visita} />
                 ))}
                 {visitados.length === 0 && <div style={{ color: "#aaa" }}>No has visitado ningún lugar aún.</div>}
               </div>
@@ -262,7 +262,13 @@ const Perfil = () => {
             <PerfilBlock title="Favoritos" action={<button className="btn" onClick={() => navigate("/favoritos")}>Ver más</button>}>
               <div className="perfil-places-list">
                 {favoritos.slice(0, 3).map((f, i) => (
-                  <PerfilPlaceCard key={i} place={f} onClick={() => handlePlaceClick(f)} />
+                  <PlaceCard 
+                    key={i} 
+                    place={f} 
+                    onClick={() => handlePlaceClick(f)} 
+                    fechaVisita={f.fecha_visita || f.fecha_agregado || f.fecha_favorito} 
+                    textoFecha="Fecha añadido a favoritos" 
+                  />
                 ))}
                 {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tienes favoritos aún.</div>}
               </div>

@@ -5,10 +5,10 @@ import { addPlaceToDB } from "../api/plazes/addPlace";
 import { addFavorite } from "../api/plazes/addFavorite";
 import "../styles/pages/page-common.css";
 import "../styles/pages/search.css";
-import SearchInput from "../components/search/SearchInput";
-import RadiusSlider from "../components/search/RadiusSlider";
-import TypeFilters from "../components/search/TypeFilters";
-import SearchResults from "../components/search/SearchResults";
+import SearchInput from "../components/SearchInput";
+import RadiusSlider from "../components/RadiusSlider";
+import TypeFilters from "../components/TypeFilters";
+import SearchResults from "../components/SearchResults";
 import { useNavigate } from "react-router-dom";
 
 const placeTypes = [

@@ -1,32 +1,26 @@
+// Reemplazar todo el contenido por el PlaceDetail completo y funcional migrado desde search/PlaceDetail.js
 import React, { useState, useEffect } from "react";
-import Tabs from "../Tabs";
-import { addReview, getReviews } from "../../api/plazes/reviews";
+import Tabs from "./Tabs";
+import { addReview, getReviews } from "../api/plazes/reviews";
 import axios from "axios";
-import { addFavorite } from "../../api/plazes/addFavorite";
-import { getVisitados, addVisitado, removeVisitado } from "../../api/plazes/visitados";
-import { getLugarId } from "../../api/plazes/getLugarId";
-import "../../styles/pages/search.css";
+import { addFavorite } from "../api/plazes/addFavorite";
+import { getVisitados, addVisitado } from "../api/plazes/visitados";
+import { getLugarId } from "../api/plazes/getLugarId";
+import "../styles/pages/search.css";
 
 const PlaceDetail = ({ place }) => {
   const [imgSrc, setImgSrc] = useState(process.env.PUBLIC_URL + "/images/nophoto.png");
   const [imgLoaded, setImgLoaded] = useState(false);
-  // Pestañas de comentarios
   const [googleReviews, setGoogleReviews] = useState([]);
   const [appReviews, setAppReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-
-  // Ordenación de comentarios
   const [googleSort, setGoogleSort] = useState("reciente");
   const [appSort, setAppSort] = useState("reciente");
-
-  // Estado para el formulario de reseñas
   const [reviewText, setReviewText] = useState("");
   const [reviewStars, setReviewStars] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
-
   const isAdmin = localStorage.getItem("es_admin") === "true";
-  // Obtener el userId del token si no está en localStorage
   let userId = localStorage.getItem("user_id");
   if (!userId) {
     try {
@@ -38,34 +32,25 @@ const PlaceDetail = ({ place }) => {
       }
     } catch {}
   }
-
-  // Menú de opciones en comentarios
-  const [menuOpen, setMenuOpen] = useState(null); // índice del comentario con menú abierto
-  // Estado para edición de reseña
+  const [menuOpen, setMenuOpen] = useState(null);
   const [editReviewId, setEditReviewId] = useState(null);
   const [editReviewText, setEditReviewText] = useState("");
   const [editReviewStars, setEditReviewStars] = useState(0);
-
-  // --- NUEVO: obtener URL del iframe del backend ---
   const [embedUrl, setEmbedUrl] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isVisitado, setIsVisitado] = useState(false);
 
   useEffect(() => {
     if (!place) return;
-    // Obtener la URL de la foto para legacy y para API New
     let photoUrl = process.env.PUBLIC_URL + "/images/nophoto.png";
     if (place.photos && place.photos.length > 0) {
-      // API New
       if (place.photos[0].name) {
         photoUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
       }
-      // Legacy
       if (place.photos[0].photo_reference) {
         photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
       }
     }
-
     const img = new window.Image();
     img.onload = () => {
       setImgSrc(photoUrl);
@@ -77,25 +62,20 @@ const PlaceDetail = ({ place }) => {
     img.src = photoUrl;
   }, [place]);
 
-  // Cargar comentarios de la app desde el backend
   useEffect(() => {
     if (!place) return;
     setReviewsLoading(true);
-    // Google reviews
     let google = [];
     if (place.reviews) google = place.reviews;
     setGoogleReviews(google);
-    // App reviews: cargar todos los comentarios del sitio
     getReviews(place.id || place.place_id)
       .then(data => setAppReviews(data))
       .catch(() => setAppReviews([]))
       .finally(() => setReviewsLoading(false));
   }, [place]);
 
-  // --- NUEVO: efecto para pedir el embedUrl ---
   useEffect(() => {
     if (!place) return setEmbedUrl(null);
-    // Obtener coordenadas para el mapa
     let lat = null, lng = null;
     const name = place.displayName?.text || place.name || "Sin nombre";
     if (place.location && place.location.latitude && place.location.longitude) {
@@ -117,21 +97,17 @@ const PlaceDetail = ({ place }) => {
   useEffect(() => {
     const fetchStates = async () => {
       const token = localStorage.getItem("token");
-      // Comprobar favoritos
       try {
         const favRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/favoritos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Normalizar place_id para comparación robusta
         const currentPlaceId = (place.id || place.place_id || "").toString().trim().toLowerCase();
         let isFav = false;
         for (const f of favRes.data) {
-          // Comprobar por place_id
           if ((f.place_id || "").toString().trim().toLowerCase() === currentPlaceId) {
             isFav = true;
             break;
           }
-          // Comprobar por id_lugar si está disponible
           if (f.id && place.id && String(f.id) === String(place.id)) {
             isFav = true;
             break;
@@ -139,7 +115,6 @@ const PlaceDetail = ({ place }) => {
         }
         setIsFavorite(isFav);
       } catch {}
-      // Comprobar visitados
       try {
         const visRes = await getVisitados(token);
         setIsVisitado(!!visRes.find(v => v.place_id === (place.id || place.place_id)));
@@ -171,7 +146,6 @@ const PlaceDetail = ({ place }) => {
     return sorted;
   }
 
-  // Enviar reseña
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     setReviewSubmitting(true);
@@ -185,7 +159,6 @@ const PlaceDetail = ({ place }) => {
       }, token);
       setReviewText("");
       setReviewStars(0);
-      // Recargar reseñas
       const data = await getReviews(place.id || place.place_id, token);
       setAppReviews(data);
     } catch (err) {
@@ -194,7 +167,6 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
-  // Eliminar reseña
   const handleDeleteReview = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar esta reseña?")) return;
     setReviewSubmitting(true);
@@ -204,7 +176,6 @@ const PlaceDetail = ({ place }) => {
       await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Recargar reseñas
       const data = await getReviews(place.id || place.place_id, token);
       setAppReviews(data);
     } catch (err) {
@@ -213,7 +184,6 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
-  // Función para iniciar edición
   const handleEditClick = (review) => {
     setEditReviewId(review.id);
     setEditReviewText(review.comentario);
@@ -221,7 +191,6 @@ const PlaceDetail = ({ place }) => {
     setMenuOpen(null);
   };
 
-  // Función para guardar edición
   const handleEditSave = async () => {
     setReviewSubmitting(true);
     setReviewError("");
@@ -233,7 +202,6 @@ const PlaceDetail = ({ place }) => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Recargar reseñas
       const data = await getReviews(place.id || place.place_id, token);
       setAppReviews(data);
       setEditReviewId(null);
@@ -245,7 +213,6 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
-  // Función para cancelar edición
   const handleEditCancel = () => {
     setEditReviewId(null);
     setEditReviewText("");
@@ -258,14 +225,12 @@ const PlaceDetail = ({ place }) => {
       await addFavorite(place, token);
       setIsFavorite(true);
     } else {
-      // Obtener id_lugar antes de eliminar
       try {
         const id_lugar = await getLugarId(place.id || place.place_id, token);
         await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/favoritos/${id_lugar}`,
           { headers: { Authorization: `Bearer ${token}` } });
         setIsFavorite(false);
       } catch (err) {
-        // Feedback opcional: error al eliminar favorito
         alert("No se pudo eliminar de favoritos");
       }
     }
@@ -277,7 +242,6 @@ const PlaceDetail = ({ place }) => {
       await addVisitado(place, token);
       setIsVisitado(true);
     } else {
-      // Obtener id_lugar antes de eliminar
       try {
         const id_lugar = await getLugarId(place.id || place.place_id, token);
         await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/visitados/${id_lugar}`,
@@ -292,8 +256,6 @@ const PlaceDetail = ({ place }) => {
   if (!place) return <div>No hay datos del sitio.</div>;
   const name = place.displayName?.text || place.name || "Sin nombre";
   const rating = place.rating || "-";
-
-  // Obtener coordenadas para el mapa
   let lat = null, lng = null;
   if (place.location && place.location.latitude && place.location.longitude) {
     lat = place.location.latitude;
@@ -303,7 +265,6 @@ const PlaceDetail = ({ place }) => {
     lng = place.geometry.location.lng;
   }
 
-  // Componente de estrellas dinámicas para calificar
   function StarRating({ value, onChange }) {
     const [hover, setHover] = useState(null);
     return (
@@ -323,13 +284,10 @@ const PlaceDetail = ({ place }) => {
     );
   }
 
-  // Render de comentarios de la app
   function renderAppReviews() {
     return (
       <ul className="reviews-list">
         {sortReviews(appReviews, appSort).map((r, i) => {
-          // Forzar comparación a string y log para depuración
-          console.log('userId:', userId, 'r.id_usuario:', r.id_usuario, r);
           const isOwner = userId && (String(r.id_usuario) === String(userId));
           const canEdit = isOwner;
           const canDelete = isOwner || isAdmin;
@@ -357,7 +315,6 @@ const PlaceDetail = ({ place }) => {
                   )}
                 </div>
               )}
-              {/* Formulario de edición inline */}
               {editReviewId === r.id && (
                 <div style={{ marginTop: 12, background: '#181818', borderRadius: 6, padding: 12 }}>
                   <textarea
@@ -395,10 +352,8 @@ const PlaceDetail = ({ place }) => {
       <div><b>Tipos:</b> {place.types && place.types.join(", ")}</div>
       {place.websiteUri && <div><a href={place.websiteUri} target="_blank" rel="noopener noreferrer">Sitio web</a></div>}
       {place.nationalPhoneNumber && <div><b>Teléfono:</b> {place.nationalPhoneNumber}</div>}
-      {/* Mapa y botón de navegación */}
       {lat && lng && (
         <div style={{ position: "relative", margin: "24px 0" }}>
-          {/* Mapa embebido si está disponible */}
           {embedUrl ? (
             <iframe
               src={embedUrl}
@@ -426,7 +381,6 @@ const PlaceDetail = ({ place }) => {
           {isVisitado ? 'Eliminar de visitados' : 'Marcar como visitado'}
         </button>
       </div>
-      {/* Aquí irá la pestaña de comentarios */}
       <Tabs
         tabs={[
           {
@@ -474,7 +428,6 @@ const PlaceDetail = ({ place }) => {
                     <option value="peor">Peor calificación</option>
                   </select>
                 </div>
-                {/* Formulario para crear reseña */}
                 <form style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }} onSubmit={handleSubmitReview}>
                   <input type="text" placeholder="Tu comentario..." style={{ width: "60%" }} required value={reviewText} onChange={e => setReviewText(e.target.value)} />
                   <StarRating value={reviewStars} onChange={setReviewStars} />

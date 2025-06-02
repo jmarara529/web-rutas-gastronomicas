@@ -12,6 +12,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Perfil from "./pages/perfil"; // Asegúrate de que la ruta de importación sea correcta
 import MisResenas from "./pages/MisResenas";
 import LugaresVisitados from "./pages/LugaresVisitados";
+import Favoritos from "./pages/Favoritos";
 
 // Define rutas públicas y privadas
 const publicRoutes = [
@@ -29,7 +30,8 @@ const privateRoutes = [
     { path: "/sitio/:placeId", element: <PlacePage /> },
     { path: "/perfil", element: <Perfil /> },
     { path: "/mis-reseñas", element: <MisResenas /> },
-    { path: "/lugares-visitados", element: <LugaresVisitados /> }
+    { path: "/lugares-visitados", element: <LugaresVisitados /> },
+    { path: "/favoritos", element: <Favoritos /> }
 ];
 
 const App = () => {

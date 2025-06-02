@@ -1,3 +1,4 @@
+// Componente movido desde search/ para centralización
 import React from "react";
 
 const RadiusSlider = ({ radius, setRadius }) => (
