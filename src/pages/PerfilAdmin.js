@@ -19,6 +19,7 @@ const PerfilAdmin = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(null);
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
@@ -202,6 +203,23 @@ const PerfilAdmin = () => {
     navigate(`/sitio/${place.place_id || place.id}`);
   };
 
+  const handleDeleteReview = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar este comentario?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Recargar comentarios
+      const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComentarios(comRes.data || []);
+    } catch (err) {
+      alert("No se pudo eliminar el comentario");
+    }
+  };
+
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
@@ -295,6 +313,10 @@ const PerfilAdmin = () => {
                 reviews={comentarios}
                 userId={user.id}
                 isAdmin={true}
+                menuOpen={menuOpen}
+                setMenuOpen={setMenuOpen}
+                allowEdit={false}
+                onDeleteReview={handleDeleteReview}
               />
               {comentarios.length === 0 && <div style={{ color: "#aaa" }}>No ha escrito comentarios aún.</div>}
             </PerfilBlock>

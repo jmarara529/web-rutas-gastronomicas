@@ -19,12 +19,13 @@ const ReviewList = ({
   onEditSave,
   onEditCancel,
   onDeleteReview,
-  StarRating
+  StarRating,
+  allowEdit = true // Nueva prop para controlar si se permite editar
 }) => (
   <ul className="reviews-list">
     {reviews.map((r, i) => {
       const isOwner = userId && (String(r.id_usuario) === String(userId));
-      const canEdit = isOwner;
+      const canEdit = isOwner && allowEdit; // Solo el dueño puede editar si allowEdit es true
       const canDelete = isOwner || isAdmin;
       const userLabel = r.nombre_lugar || r.nombre_usuario || r.usuario || "";
       return (
