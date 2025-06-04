@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import SearchInputResenas from "../components/SearchInputResenas";
-import PlaceCard from "../components/PlaceCard";
+import PlacesList from "../components/PlacesList";
 import axios from "axios";
 import "../styles/pages/page-common.css";
 
@@ -14,9 +14,9 @@ function normalize(str) {
 function sortVisitados(arr, sortType) {
   let sorted = [...arr];
   if (sortType === "reciente") {
-    sorted.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    sorted.sort((a, b) => new Date(b.fecha_visita || b.fecha) - new Date(a.fecha_visita || a.fecha));
   } else if (sortType === "antiguo") {
-    sorted.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    sorted.sort((a, b) => new Date(a.fecha_visita || a.fecha) - new Date(b.fecha_visita || b.fecha));
   } else if (sortType === "sitio-asc") {
     sorted.sort((a, b) => (a.nombre_lugar || a.nombre || "").localeCompare(b.nombre_lugar || b.nombre || ""));
   } else if (sortType === "sitio-desc") {
@@ -51,13 +51,30 @@ const LugaresVisitados = () => {
         // Obtener detalles de Google para cada uno (igual que en perfil)
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
+          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la tabla lugares usando elendpoint byid
+          if (!placeId && v.id_lugar) {
+            try {
+              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${v.id_lugar}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
+            } catch {}
+          }
           if (placeId) {
             try {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
-                if (photos && photos.length > 0 && photos[0].photo_reference) {
-                  photos = photos.map(p => ({ name: `photo_reference/${p.photo_reference}` }));
+                // Adaptar fotos tanto para API moderna como legacy
+                if (photos && photos.length > 0) {
+                  photos = photos.map(p => {
+                    if (p.photo_reference) {
+                      return { name: `photo_reference/${p.photo_reference}` };
+                    } else if (p.name) {
+                      return { name: p.name };
+                    }
+                    return null;
+                  }).filter(Boolean);
                 }
                 return {
                   ...v,
@@ -66,35 +83,29 @@ const LugaresVisitados = () => {
                   displayName: { text: placeDetail.data.result.name || v.nombre_lugar || v.nombre || "Sin nombre" },
                   name: placeDetail.data.result.name || v.nombre_lugar || v.nombre || "Sin nombre",
                   rating: placeDetail.data.result.rating || v.rating || "-",
-                  photos: photos
+                  ...(photos && photos.length > 0 ? { photos } : {})
                 };
               }
-              // Si no hay datos de Google, usar los del backend
               return {
                 ...v,
                 displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
                 name: v.nombre_lugar || v.nombre || "Sin nombre",
-                rating: v.rating || "-",
-                photos: []
+                rating: v.rating || "-"
               };
             } catch (e) {
-              // Si falla la consulta a Google, usar los del backend
               return {
                 ...v,
                 displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
                 name: v.nombre_lugar || v.nombre || "Sin nombre",
-                rating: v.rating || "-",
-                photos: []
+                rating: v.rating || "-"
               };
             }
           }
-          // Si no hay place_id, usar los del backend
           return {
             ...v,
             displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
             name: v.nombre_lugar || v.nombre || "Sin nombre",
-            rating: v.rating || "-",
-            photos: []
+            rating: v.rating || "-"
           };
         }));
         setVisitados(visitadosData);
@@ -149,11 +160,12 @@ const LugaresVisitados = () => {
           paginated.length === 0 ? (
             <div style={{ color: "#aaa" }}>No has visitado ningún lugar aún.</div>
           ) : (
-            <div className="perfil-places-list">
-              {paginated.map((v, i) => (
-                <PlaceCard key={i} place={v} onClick={() => window.location.href = `/sitio/${v.place_id}`} fechaVisita={v.fecha_visita} />
-              ))}
-            </div>
+            <PlacesList 
+              places={paginated}
+              onPlaceClick={place => window.location.href = `/sitio/${place.place_id || place.id}`}
+              fechaKey="fecha_visita"
+              textoFecha="Fecha de visita"
+            />
           )
         )}
         {/* Paginación */}

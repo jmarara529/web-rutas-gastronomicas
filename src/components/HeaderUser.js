@@ -31,7 +31,7 @@ const HeaderUser = ({ isAdmin }) => {
                 <li><Link to="/mis-reseñas">Mis Reseñas</Link></li>
                 <li><Link to="/lugares-visitados">Lugares Visitados</Link></li>
                 <li><Link to="/perfil">Perfil</Link></li>
-                {isAdmin && <li><Link to="/historial-eliminaciones">Historial de Eliminaciones</Link></li>}
+                {isAdmin && <li><Link to="/historial-eliminaciones">Historial de Acciones</Link></li>}
                 {isAdmin && <li><Link to="/administrar-usuarios">administrar usuarios</Link></li>}
                 <span className="header-user-link" onClick={handleLogout} tabIndex={0} role="button" style={{ cursor: 'pointer' }}>
                   Cerrar sesión

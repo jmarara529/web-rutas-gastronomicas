@@ -7,7 +7,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
 import ReviewList from "../components/ReviewList";
-import PlaceCard from "../components/PlaceCard";
+import PlacesList from "../components/PlacesList";
 
 const Perfil = () => {
   const [user, setUser] = useState({ nombre: "", correo: "" });
@@ -23,6 +23,10 @@ const Perfil = () => {
   const [editReviewStars, setEditReviewStars] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteForm, setDeleteForm] = useState({ correo: "", password: "" });
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
@@ -44,15 +48,13 @@ const Perfil = () => {
         let visitadosData = visitadosRes.data || [];
         // Si hay visitados, obtener detalles de Google para cada uno
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
-          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la API de lugares
           let placeId = v.place_id;
           if (!placeId && v.id_lugar) {
             try {
-              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares`, {
+              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${v.id_lugar}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
-              const lugar = (lugarRes.data || []).find(l => l.id === v.id_lugar);
-              if (lugar && lugar.place_id) placeId = lugar.place_id;
+              if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
             } catch {}
           }
           if (placeId) {
@@ -60,10 +62,16 @@ const Perfil = () => {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
-                if (photos && photos.length > 0 && photos[0].photo_reference) {
-                  photos = photos.map(p => ({
-                    name: `photo_reference/${p.photo_reference}`
-                  }));
+                // Adaptar fotos tanto para API moderna como legacy
+                if (photos && photos.length > 0) {
+                  photos = photos.map(p => {
+                    if (p.photo_reference) {
+                      return { name: `photo_reference/${p.photo_reference}` };
+                    } else if (p.name) {
+                      return { name: p.name };
+                    }
+                    return null;
+                  }).filter(Boolean);
                 }
                 return {
                   ...v,
@@ -72,35 +80,29 @@ const Perfil = () => {
                   displayName: { text: placeDetail.data.result.name || v.nombre_lugar || v.nombre || "Sin nombre" },
                   name: placeDetail.data.result.name || v.nombre_lugar || v.nombre || "Sin nombre",
                   rating: placeDetail.data.result.rating || v.rating || "-",
-                  photos: photos
+                  ...(photos && photos.length > 0 ? { photos } : {})
                 };
               }
-              // Si no hay datos de Google, usar los del backend
               return {
                 ...v,
                 displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
                 name: v.nombre_lugar || v.nombre || "Sin nombre",
-                rating: v.rating || "-",
-                photos: []
+                rating: v.rating || "-"
               };
             } catch (e) {
-              // Si falla la consulta a Google, usar los del backend
               return {
                 ...v,
                 displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
                 name: v.nombre_lugar || v.nombre || "Sin nombre",
-                rating: v.rating || "-",
-                photos: []
+                rating: v.rating || "-"
               };
             }
           }
-          // Si no hay place_id, usar los del backend
           return {
             ...v,
             displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
             name: v.nombre_lugar || v.nombre || "Sin nombre",
-            rating: v.rating || "-",
-            photos: []
+            rating: v.rating || "-"
           };
         }));
         setVisitados(visitadosData);
@@ -111,24 +113,39 @@ const Perfil = () => {
         let favoritosData = favRes.data || [];
         // Si hay favoritos, obtener detalles de Google para cada uno
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
-          if (fav.place_id) {
+          let placeId = fav.place_id;
+          if (!placeId && fav.id_lugar) {
             try {
-              const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: fav.place_id } });
+              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${fav.id_lugar}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
+            } catch {}
+          }
+          if (placeId) {
+            try {
+              const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
-                // Adaptar formato de fotos legacy (photo_reference) a formato compatible con PlaceCard
-                if (photos && photos.length > 0 && photos[0].photo_reference) {
-                  photos = photos.map(p => ({
-                    name: `photo_reference/${p.photo_reference}`
-                  }));
+                // Adaptar fotos tanto para API moderna como legacy
+                if (photos && photos.length > 0) {
+                  photos = photos.map(p => {
+                    if (p.photo_reference) {
+                      return { name: `photo_reference/${p.photo_reference}` };
+                    } else if (p.name) {
+                      return { name: p.name };
+                    }
+                    return null;
+                  }).filter(Boolean);
                 }
                 return {
                   ...fav,
                   ...placeDetail.data.result,
-                  displayName: { text: placeDetail.data.result.name },
-                  name: placeDetail.data.result.name,
-                  rating: placeDetail.data.result.rating,
-                  photos: photos
+                  place_id: placeId,
+                  displayName: { text: placeDetail.data.result.name || fav.nombre_lugar || fav.nombre || "Sin nombre" },
+                  name: placeDetail.data.result.name || fav.nombre_lugar || fav.nombre || "Sin nombre",
+                  rating: placeDetail.data.result.rating || fav.rating || "-",
+                  ...(photos && photos.length > 0 ? { photos } : {})
                 };
               }
               return fav;
@@ -190,6 +207,35 @@ const Perfil = () => {
     );
   }
 
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    setDeleteError("");
+    setDeleteLoading(true);
+    try {
+      // Verificar credenciales
+      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, {
+        correo: deleteForm.correo,
+        contraseña: deleteForm.password
+      });
+      if (!res.data || !res.data.token) throw new Error("Credenciales incorrectas");
+      // Eliminar cuenta
+      const token = localStorage.getItem("token");
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.clear();
+      window.location.href = "/";
+      return; // Evita seguir ejecutando el formulario tras eliminar
+    } catch (err) {
+      let msg = "Error: credenciales incorrectas o no se pudo eliminar la cuenta";
+      if (err.response && err.response.data && (err.response.data.msg || err.response.data.error)) {
+        msg = err.response.data.msg || err.response.data.error;
+      }
+      setDeleteError(msg);
+    }
+    setDeleteLoading(false);
+  };
+
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
@@ -207,6 +253,26 @@ const Perfil = () => {
                 <>
                   <div><b>Nombre:</b> {user.nombre}</div>
                   <div><b>Correo:</b> {user.correo}</div>
+                  {user.id !== 1 && (
+                    <div style={{ marginTop: 16 }}>
+                      {!showDelete ? (
+                        <button className="btn" style={{ background: '#e53935', color: '#fff' }} onClick={() => setShowDelete(true)}>
+                          Eliminar cuenta
+                        </button>
+                      ) : (
+                        <form onSubmit={handleDeleteAccount} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                          <div style={{ color: '#e53935', fontWeight: 600 }}>Esta acción es irreversible. Ingresa tus credenciales para confirmar:</div>
+                          <input type="email" placeholder="Correo" value={deleteForm.correo} onChange={e => setDeleteForm({ ...deleteForm, correo: e.target.value })} required />
+                          <input type="password" placeholder="Contraseña" value={deleteForm.password} onChange={e => setDeleteForm({ ...deleteForm, password: e.target.value })} required />
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button className="btn" type="submit" style={{ background: '#e53935', color: '#fff' }} disabled={deleteLoading}>Confirmar eliminación</button>
+                            <button className="btn" type="button" onClick={() => setShowDelete(false)} disabled={deleteLoading}>Cancelar</button>
+                          </div>
+                          {deleteError && <div style={{ color: '#e53935', fontWeight: 500 }}>{deleteError}</div>}
+                        </form>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <DynamicUserForm
@@ -252,24 +318,24 @@ const Perfil = () => {
             {/* LUGARES VISITADOS */}
             <PerfilBlock title="Lugares visitados" action={<button className="btn" onClick={() => navigate("/lugares-visitados")}>Ver más</button>}>
               <div className="perfil-places-list">
-                {visitados.slice(0, 3).map((v, i) => (
-                  <PlaceCard key={i} place={v} onClick={() => handlePlaceClick(v)} fechaVisita={v.fecha_visita} />
-                ))}
+                <PlacesList 
+                  places={visitados.slice(0, 3)}
+                  onPlaceClick={handlePlaceClick}
+                  fechaKey="fecha_visita"
+                  textoFecha="Fecha de visita"
+                />
                 {visitados.length === 0 && <div style={{ color: "#aaa" }}>No has visitado ningún lugar aún.</div>}
               </div>
             </PerfilBlock>
             {/* FAVORITOS */}
             <PerfilBlock title="Favoritos" action={<button className="btn" onClick={() => navigate("/favoritos")}>Ver más</button>}>
               <div className="perfil-places-list">
-                {favoritos.slice(0, 3).map((f, i) => (
-                  <PlaceCard 
-                    key={i} 
-                    place={f} 
-                    onClick={() => handlePlaceClick(f)} 
-                    fechaVisita={f.fecha_visita || f.fecha_agregado || f.fecha_favorito} 
-                    textoFecha="Fecha añadido a favoritos" 
-                  />
-                ))}
+                <PlacesList 
+                  places={favoritos.slice(0, 3)}
+                  onPlaceClick={handlePlaceClick}
+                  fechaKey="fecha_visita"
+                  textoFecha="Fecha añadido a favoritos"
+                />
                 {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tienes favoritos aún.</div>}
               </div>
             </PerfilBlock>

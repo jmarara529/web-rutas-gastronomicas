@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import SearchInputResenas from "../components/SearchInputResenas";
-import PlaceCard from "../components/PlaceCard";
+import PlacesList from "../components/PlacesList";
 import axios from "axios";
 import "../styles/pages/page-common.css";
 
@@ -14,13 +14,13 @@ function normalize(str) {
 function sortFavoritos(arr, sortType) {
   let sorted = [...arr];
   if (sortType === "reciente") {
-    sorted.sort((a, b) => new Date(b.fecha_favorito) - new Date(a.fecha_favorito));
+    sorted.sort((a, b) => new Date(b.fecha_visita || b.fecha_agregado || b.fecha_favorito) - new Date(a.fecha_visita || a.fecha_agregado || a.fecha_favorito));
   } else if (sortType === "antiguo") {
-    sorted.sort((a, b) => new Date(a.fecha_favorito) - new Date(b.fecha_favorito));
+    sorted.sort((a, b) => new Date(a.fecha_visita || a.fecha_agregado || a.fecha_favorito) - new Date(b.fecha_visita || b.fecha_agregado || b.fecha_favorito));
   } else if (sortType === "sitio-asc") {
-    sorted.sort((a, b) => (a.nombre_lugar || a.nombre || "").localeCompare(b.nombre_lugar || b.nombre || ""));
+    sorted.sort((a, b) => (a.nombre_lugar || a.name || "").localeCompare(b.nombre_lugar || b.name || ""));
   } else if (sortType === "sitio-desc") {
-    sorted.sort((a, b) => (b.nombre_lugar || b.nombre || "").localeCompare(a.nombre_lugar || a.nombre || ""));
+    sorted.sort((a, b) => (b.nombre_lugar || b.name || "").localeCompare(a.nombre_lugar || a.name || ""));
   } else if (sortType === "puntuacion-alta") {
     sorted.sort((a, b) => (b.rating || b.calificacion || 0) - (a.rating || a.calificacion || 0));
   } else if (sortType === "puntuacion-baja") {
@@ -48,27 +48,42 @@ const Favoritos = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         let favoritosRaw = res.data || [];
-        // Obtener detalles de Google Places para cada favorito
-        favoritosRaw = await Promise.all(favoritosRaw.map(async (fav) => {
+        // Si hay favoritos, obtener detalles de Google Places para cada favorito
+        favoritosRaw = await Promise.all(favoritosRaw.map(async (fav, idx) => {
           let placeId = fav.place_id;
-          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la API de lugares
+          // Debug inicio
+          console.log(`[DEBUG][Favoritos] (${idx}) fav.id_lugar:`, fav.id_lugar, 'fav.place_id:', fav.place_id);
+          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la tabla lugares usando el endpoint byid
           if (!placeId && fav.id_lugar) {
             try {
-              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares`, {
+              const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${fav.id_lugar}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
-              const lugar = (lugarRes.data || []).find(l => l.id === fav.id_lugar);
-              if (lugar && lugar.place_id) placeId = lugar.place_id;
-            } catch {}
+              if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
+              console.log(`[DEBUG][Favoritos] (${idx}) place_id obtenido de /lugares/byid:`, placeId);
+            } catch (err) {
+              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo place_id de /lugares/byid:`, err);
+            }
           }
+          // Si ya tenemos placeId, obtenemos detalles de Google Places
           if (placeId) {
             try {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
+              console.log(`[DEBUG][Favoritos] (${idx}) Detalles de Google Places:`, placeDetail.data);
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
-                if (photos && photos.length > 0 && photos[0].photo_reference) {
-                  photos = photos.map(p => ({ name: `photo_reference/${p.photo_reference}` }));
+                // Adaptar fotos tanto para API moderna como legacy
+                if (photos && photos.length > 0) {
+                  photos = photos.map(p => {
+                    if (p.photo_reference) {
+                      return { name: `photo_reference/${p.photo_reference}` };
+                    } else if (p.name) {
+                      return { name: p.name };
+                    }
+                    return null;
+                  }).filter(Boolean);
                 }
+                console.log(`[DEBUG][Favoritos] (${idx}) Fotos adaptadas:`, photos);
                 return {
                   ...fav,
                   ...placeDetail.data.result,
@@ -76,39 +91,38 @@ const Favoritos = () => {
                   displayName: { text: placeDetail.data.result.name || fav.nombre_lugar || fav.nombre || "Sin nombre" },
                   name: placeDetail.data.result.name || fav.nombre_lugar || fav.nombre || "Sin nombre",
                   rating: placeDetail.data.result.rating || fav.rating || "-",
-                  photos: photos,
-                  fecha_visita: fav.fecha_agregado
+                  ...(photos && photos.length > 0 ? { photos } : {}),
+                  fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
                 };
               }
               // Si no hay datos de Google, usar los del backend
+              console.warn(`[DEBUG][Favoritos] (${idx}) No hay datos de Google Places para place_id:`, placeId);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
                 name: fav.nombre_lugar || fav.nombre || "Sin nombre",
                 rating: fav.rating || "-",
-                photos: [],
-                fecha_visita: fav.fecha_agregado
+                fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
               };
             } catch (e) {
-              // Si falla la consulta a Google, usar los del backend
+              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo detalles de Google Places:`, e);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
                 name: fav.nombre_lugar || fav.nombre || "Sin nombre",
                 rating: fav.rating || "-",
-                photos: [],
-                fecha_visita: fav.fecha_agregado
+                fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
               };
             }
           }
-          // Si no hay place_id, usar los del backend
+          // Si no hay placeId, solo datos locales
+          console.warn(`[DEBUG][Favoritos] (${idx}) No se pudo obtener place_id para favorito`, fav);
           return {
             ...fav,
             displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
             name: fav.nombre_lugar || fav.nombre || "Sin nombre",
             rating: fav.rating || "-",
-            photos: [],
-            fecha_visita: fav.fecha_agregado
+            fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
           };
         }));
         setFavoritos(favoritosRaw);
@@ -163,18 +177,12 @@ const Favoritos = () => {
         ) : error ? (
           <div style={{ color: "#ff9800" }}>{error}</div>
         ) : (
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {paginated.map(place => (
-              <li key={place.id || place.place_id || place._id || Math.random()} style={{ margin: "12px 0" }}>
-                <PlaceCard 
-                  place={place} 
-                  onClick={() => handlePlaceClick(place)} 
-                  fechaVisita={place.fecha_visita || place.fecha_agregado || place.fecha_favorito} 
-                  textoFecha="Fecha añadido a favoritos" 
-                />
-              </li>
-            ))}
-          </ul>
+          <PlacesList 
+            places={paginated}
+            onPlaceClick={handlePlaceClick}
+            fechaKey="fecha_visita"
+            textoFecha="Fecha añadido a favoritos"
+          />
         )}
         {totalPages > 1 && (
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>

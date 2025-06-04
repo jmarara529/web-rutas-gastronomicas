@@ -18,16 +18,24 @@ const DynamicUserForm = ({
   error = "",
   submitText = "Guardar",
   showCancel = false,
-  title = ""
+  title = "",
+  renderExtraFields // NUEVO: función para renderizar campos extra personalizados
 }) => {
   const [form, setForm] = useState(() => {
     const obj = {};
-    fields.forEach(f => { obj[f.name] = initialValues[f.name] || ""; });
+    fields.forEach(f => { obj[f.name] = initialValues[f.name] || (f.type === 'checkbox' ? false : ""); });
     return obj;
   });
 
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    // Soporte para checkbox
+    if (e.target && e.target.type === 'checkbox') {
+      setForm({ ...form, [e.target.name]: e.target.checked });
+    } else if (e.target) {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    } else if (e.name && typeof e.value !== 'undefined') {
+      setForm({ ...form, [e.name]: e.value });
+    }
   };
 
   const handleSubmit = e => {
@@ -41,6 +49,20 @@ const DynamicUserForm = ({
       <ErrorMessage error={error} />
       {fields.map(f => {
         const Comp = FIELD_TYPES[f.type] || TextInput;
+        if (f.type === 'checkbox') {
+          return (
+            <label key={f.name} style={{ width: "100%", textAlign: "left", display: 'flex', alignItems: 'center', gap: 8 }}>
+              {f.label}:
+              <input
+                type="checkbox"
+                name={f.name}
+                checked={!!form[f.name]}
+                onChange={handleChange}
+                style={{ marginLeft: 8 }}
+              />
+            </label>
+          );
+        }
         return (
           <label key={f.name} style={{ width: "100%", textAlign: "left" }}>
             {f.label}:
@@ -56,6 +78,8 @@ const DynamicUserForm = ({
           </label>
         );
       })}
+      {/* Renderizar campos extra personalizados si se pasan */}
+      {renderExtraFields && renderExtraFields(form, handleChange)}
       <div style={{ display: "flex", gap: 8, marginTop: 8, justifyContent: "center" }}>
         <button className="btn" type="submit" disabled={loading}>{submitText}</button>
         {showCancel && <button className="btn" type="button" onClick={onCancel} disabled={loading}>Cancelar</button>}

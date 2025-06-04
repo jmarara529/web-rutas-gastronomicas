@@ -13,6 +13,10 @@ import Perfil from "./pages/perfil"; // Asegúrate de que la ruta de importació
 import MisResenas from "./pages/MisResenas";
 import LugaresVisitados from "./pages/LugaresVisitados";
 import Favoritos from "./pages/Favoritos";
+import AdminRoute from "./components/AdminRoute";
+import HistorialEliminaciones from "./pages/HistorialEliminaciones";
+import AdministrarUsuarios from "./pages/AdministrarUsuarios";
+import PerfilAdmin from "./pages/PerfilAdmin";
 
 // Define rutas públicas y privadas
 const publicRoutes = [
@@ -34,6 +38,12 @@ const privateRoutes = [
     { path: "/favoritos", element: <Favoritos /> }
 ];
 
+const adminRoutes = [
+    { path: "/historial-eliminaciones", element: <HistorialEliminaciones /> },
+    { path: "/administrar-usuarios", element: <AdministrarUsuarios /> },
+    { path: "/admin/usuario/:userId", element: <PerfilAdmin /> }
+];
+
 const App = () => {
     return (
         <Router>
@@ -46,6 +56,13 @@ const App = () => {
                         key={path}
                         path={path}
                         element={<PrivateRoute>{element}</PrivateRoute>}
+                    />
+                ))}
+                {adminRoutes.map(({ path, element }) => (
+                    <Route
+                        key={path}
+                        path={path}
+                        element={<AdminRoute>{element}</AdminRoute>}
                     />
                 ))}
             </Routes>

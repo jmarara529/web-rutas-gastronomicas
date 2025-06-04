@@ -3,7 +3,6 @@ import "../styles/pages/search.css";
 
 // Recibe la prop fechaVisita
 const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) => {
-  const [imgSrc, setImgSrc] = useState(process.env.PUBLIC_URL + "/images/nophoto.png");
   const [imgLoaded, setImgLoaded] = useState(false);
   const name = place.displayName?.text || place.name || place.nombre_lugar || "Sin nombre";
   const rating = place.rating || place.calificacion || "-";
@@ -39,32 +38,40 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
     fechaVisitaStr = `${textoFecha || 'Fecha de visita'}: ${fechaDebug}`;
   }
 
-  useEffect(() => {
-    let url = null;
-    if (place.photos && place.photos.length > 0) {
-      if (place.photos[0].name && !place.photos[0].name.startsWith('photo_reference/')) {
-        url = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=120&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
-      } else if (place.photos[0].name && place.photos[0].name.startsWith('photo_reference/')) {
-        const ref = place.photos[0].name.replace('photo_reference/', '');
-        url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=120&photoreference=${ref}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
+  // Unifica la lógica de obtención de imagen para evitar inconsistencias y usa siempre el mismo tamaño
+  function getImgSrc(place) {
+    if (place && place.photos && place.photos.length > 0) {
+      // DEBUG: Mostrar cómo viene el campo photos
+      console.log('[DEBUG][PlaceCard] photos:', place.photos);
+      const p = place.photos[0];
+      // Prueba todos los casos posibles
+      if (p.name && p.name.startsWith('photo_reference/')) {
+        // Legacy: photo_reference en name
+        const ref = p.name.replace('photo_reference/', '');
+        console.log('[DEBUG][PlaceCard] Usando photo_reference en name:', ref);
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(ref)}`;
+      } else if (p.photo_reference) {
+        // Legacy: photo_reference directo
+        console.log('[DEBUG][PlaceCard] Usando photo_reference directo:', p.photo_reference);
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(p.photo_reference)}`;
+      } else if (p.name) {
+        // Nuevo formato Google Places API v1
+        console.log('[DEBUG][PlaceCard] Usando name:', p.name);
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?name=${encodeURIComponent(p.name)}`;
+      } else {
+        console.warn('[DEBUG][PlaceCard] No se encontró campo válido para imagen en photos[0]', p);
       }
-    } else if (place.fotos && place.fotos.length > 0) {
-      url = place.fotos[0];
+    } else if (place && place.fotos && place.fotos.length > 0) {
+      // Imagen local o personalizada
+      return place.fotos[0];
     }
-    if (url) {
-      const img = new window.Image();
-      img.onload = () => {
-        setImgSrc(url);
-        setImgLoaded(true);
-      };
-      img.onerror = () => {
-        setImgLoaded(true);
-      };
-      img.src = url;
-    } else {
-      setImgLoaded(true);
-    }
-  }, [place]);
+    return process.env.PUBLIC_URL + "/images/nophoto.png";
+  }
+
+  const imgSrc = getImgSrc(place);
+
+  // Elimina la precarga duplicada y solo marca como cargada cuando la imagen real se carga
+  // Limpia logs de depuración
 
   return (
     <div className="place-card" tabIndex={0} role="button" onClick={onClick}>
@@ -73,6 +80,8 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
         alt={name}
         className="place-card-photo"
         style={{ opacity: imgLoaded ? 1 : 0.5, transition: "opacity 0.2s" }}
+        onLoad={() => setImgLoaded(true)}
+        onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/images/nophoto.png"; setImgLoaded(true); }}
       />
       <div className="place-card-center">
         <div className="place-card-title">{name}</div>

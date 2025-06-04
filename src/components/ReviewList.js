@@ -28,7 +28,23 @@ const ReviewList = ({
       const canDelete = isOwner || isAdmin;
       const userLabel = r.nombre_lugar || r.nombre_usuario || r.usuario || "";
       return (
-        <li key={i} className="review-app" style={{ position: 'relative' }}>
+        <li key={i} className="review-app" style={{ position: 'relative', cursor: r.id_lugar ? 'pointer' : 'default' }}
+          onClick={r.id_lugar ? async (e) => {
+            // Evita navegación si el click fue en el menú de opciones
+            if (e.target.closest('.review-menu-trigger, .review-menu')) return;
+            e.stopPropagation();
+            try {
+              const token = localStorage.getItem("token");
+              const lugarRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${r.id_lugar}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              const lugar = await lugarRes.json();
+              if (lugar && lugar.place_id) {
+                window.location.href = `/sitio/${lugar.place_id}`;
+              }
+            } catch {}
+          } : undefined}
+        >
           <div style={{ fontWeight: 500 }}>{userLabel}</div>
           <div>⭐ {r.calificacion}</div>
           <div style={{ fontStyle: "italic" }}>{r.comentario}</div>
