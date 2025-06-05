@@ -9,7 +9,25 @@ import { getLugarId } from "../api/plazes/getLugarId";
 import "../styles/pages/search.css";
 
 const PlaceDetail = ({ place }) => {
-  const [imgSrc, setImgSrc] = useState(process.env.PUBLIC_URL + "/images/nophoto.png");
+  // Copio la función getImgSrc de PlaceCard para unificar la lógica de imagen
+  function getImgSrc(place) {
+    if (place && place.photos && place.photos.length > 0) {
+      const p = place.photos[0];
+      if (p.name && p.name.startsWith('photo_reference/')) {
+        const ref = p.name.replace('photo_reference/', '');
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(ref)}`;
+      } else if (p.photo_reference) {
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(p.photo_reference)}`;
+      } else if (p.name) {
+        return `${process.env.REACT_APP_API_BASE_URL}/places/photo?name=${encodeURIComponent(p.name)}`;
+      }
+    } else if (place && place.fotos && place.fotos.length > 0) {
+      return place.fotos[0];
+    }
+    return process.env.PUBLIC_URL + "/images/nophoto.png";
+  }
+
+  const [imgSrc, setImgSrc] = useState(getImgSrc(place));
   const [imgLoaded, setImgLoaded] = useState(false);
   const [googleReviews, setGoogleReviews] = useState([]);
   const [appReviews, setAppReviews] = useState([]);
@@ -41,25 +59,8 @@ const PlaceDetail = ({ place }) => {
   const [isVisitado, setIsVisitado] = useState(false);
 
   useEffect(() => {
-    if (!place) return;
-    let photoUrl = process.env.PUBLIC_URL + "/images/nophoto.png";
-    if (place.photos && place.photos.length > 0) {
-      if (place.photos[0].name) {
-        photoUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
-      }
-      if (place.photos[0].photo_reference) {
-        photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`;
-      }
-    }
-    const img = new window.Image();
-    img.onload = () => {
-      setImgSrc(photoUrl);
-      setImgLoaded(true);
-    };
-    img.onerror = () => {
-      setImgLoaded(true);
-    };
-    img.src = photoUrl;
+    setImgSrc(getImgSrc(place));
+    setImgLoaded(false);
   }, [place]);
 
   useEffect(() => {
@@ -345,6 +346,8 @@ const PlaceDetail = ({ place }) => {
         src={imgSrc}
         alt={name}
         style={{ width: 400, borderRadius: 12, marginBottom: 16, opacity: imgLoaded ? 1 : 0.5, transition: "opacity 0.2s" }}
+        onLoad={() => setImgLoaded(true)}
+        onError={() => setImgLoaded(true)}
       />
       <h2>{name}</h2>
       <div><b>Dirección:</b> {place.formattedAddress || place.vicinity || "-"}</div>

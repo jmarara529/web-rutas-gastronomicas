@@ -17,6 +17,9 @@ import AdminRoute from "./components/AdminRoute";
 import HistorialEliminaciones from "./pages/HistorialEliminaciones";
 import AdministrarUsuarios from "./pages/AdministrarUsuarios";
 import PerfilAdmin from "./pages/PerfilAdmin";
+import AdminLugaresVisitados from "./pages/AdminLugaresVisitados";
+import AdminFavoritos from "./pages/AdminFavoritos";
+import AdminComentarios from "./pages/AdminComentarios";
 
 // Define rutas públicas y privadas
 const publicRoutes = [
@@ -41,7 +44,10 @@ const privateRoutes = [
 const adminRoutes = [
     { path: "/historial-eliminaciones", element: <HistorialEliminaciones /> },
     { path: "/administrar-usuarios", element: <AdministrarUsuarios /> },
-    { path: "/admin/usuario/:userId", element: <PerfilAdmin /> }
+    { path: "/admin/usuario/:userId", element: <PerfilAdmin /> },
+    { path: "/admin/usuario/:userId/lugares-visitados", element: <AdminLugaresVisitados /> },
+    { path: "/admin/usuario/:userId/favoritos", element: <AdminFavoritos /> },
+    { path: "/admin/usuario/:userId/comentarios", element: <AdminComentarios /> }
 ];
 
 const App = () => {

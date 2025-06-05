@@ -6,6 +6,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
 import ReviewList from "../components/ReviewList";
 import PlacesList from "../components/PlacesList";
+import { getUsuarios, updateUsuario, deleteUsuario } from "../api/usuarios";
+import { getFavoritos } from "../api/favoritos";
+import { getVisitados } from "../api/visitados";
+import { getResenasUsuario, deleteResena } from "../api/resenas";
 
 const PerfilAdmin = () => {
   const { userId } = useParams();
@@ -30,15 +34,11 @@ const PerfilAdmin = () => {
       try {
         const token = localStorage.getItem("token");
         // Obtener datos usuario
-        const userRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(userRes.data || {});
+        const userRes = await getUsuarios(token);
+        const userData = (userRes || []).find(u => String(u.id) === String(userId)) || {};
+        setUser(userData);
         // Favoritos
-        const favRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/favoritos?admin_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        let favoritosData = favRes.data || [];
+        let favoritosData = await getFavoritos(token, userId);
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
           let placeId = fav.place_id;
           if (!placeId && fav.id_lugar) {
@@ -92,10 +92,7 @@ const PerfilAdmin = () => {
         }));
         setFavoritos(favoritosData);
         // Visitados
-        const visRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/visitados/admin?id_usuario=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        let visitadosData = visRes.data || [];
+        let visitadosData = await getVisitados(token, userId);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
           if (!placeId && v.id_lugar) {
@@ -149,10 +146,8 @@ const PerfilAdmin = () => {
         }));
         setVisitados(visitadosData);
         // Comentarios
-        const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setComentarios(comRes.data || []);
+        const comRes = await getResenasUsuario(token, userId);
+        setComentarios(comRes || []);
       } catch (err) {
         setError("Error al cargar datos del usuario");
       }
@@ -169,12 +164,7 @@ const PerfilAdmin = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${userId}`, {
-        ...form,
-        es_admin: form.es_admin || false,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await updateUsuario(userId, { ...form, es_admin: form.es_admin || false }, token);
       setEditMode(false);
       window.location.reload();
     } catch (err) {
@@ -188,9 +178,7 @@ const PerfilAdmin = () => {
     setDeleteLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await deleteUsuario(user.id, token);
       setDeleteLoading(false);
       window.location.href = "/administrar-usuarios";
     } catch (err) {
@@ -207,14 +195,10 @@ const PerfilAdmin = () => {
     if (!window.confirm("¿Seguro que quieres eliminar este comentario?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await deleteResena(id, token);
       // Recargar comentarios
-      const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setComentarios(comRes.data || []);
+      const comRes = await getResenasUsuario(token, userId);
+      setComentarios(comRes || []);
     } catch (err) {
       alert("No se pudo eliminar el comentario");
     }
@@ -290,7 +274,11 @@ const PerfilAdmin = () => {
                 />
               )}
             </PerfilBlock>
-            <PerfilBlock title="Lugares visitados">
+            <PerfilBlock title="Lugares visitados" action={
+              <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/lugares-visitados`)}>
+                Ver todos
+              </button>
+            }>
               <PlacesList
                 places={visitados}
                 onPlaceClick={handlePlaceClick}
@@ -299,7 +287,11 @@ const PerfilAdmin = () => {
               />
               {visitados.length === 0 && <div style={{ color: "#aaa" }}>No ha visitado ningún lugar aún.</div>}
             </PerfilBlock>
-            <PerfilBlock title="Favoritos">
+            <PerfilBlock title="Favoritos" action={
+              <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/favoritos`)}>
+                Ver todos
+              </button>
+            }>
               <PlacesList
                 places={favoritos}
                 onPlaceClick={handlePlaceClick}
@@ -308,7 +300,11 @@ const PerfilAdmin = () => {
               />
               {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tiene favoritos aún.</div>}
             </PerfilBlock>
-            <PerfilBlock title="Comentarios">
+            <PerfilBlock title="Comentarios" action={
+              <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/comentarios`)}>
+                Ver todos
+              </button>
+            }>
               <ReviewList
                 reviews={comentarios}
                 userId={user.id}

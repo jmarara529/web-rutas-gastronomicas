@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import HeaderUser from "../components/HeaderUser";
-import SearchInputResenas from "../components/SearchInputResenas";
 import PlacesList from "../components/PlacesList";
 import { getFavoritos } from "../api/favoritos";
+import SearchInputResenas from "../components/SearchInputResenas";
 import axios from "axios";
-import "../styles/pages/page-common.css";
 
 const FAVORITOS_PER_PAGE = 20;
 
@@ -30,14 +30,16 @@ function sortFavoritos(arr, sortType) {
   return sorted;
 }
 
-const Favoritos = () => {
+const AdminFavoritos = () => {
+  const { userId } = useParams();
   const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const isAdmin = localStorage.getItem("es_admin") === "true";
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("reciente");
   const [page, setPage] = useState(1);
-  const isAdmin = localStorage.getItem("es_admin") === "true";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,31 +47,23 @@ const Favoritos = () => {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        let favoritosRaw = await getFavoritos(token);
-        favoritosRaw = await Promise.all(favoritosRaw.map(async (fav, idx) => {
+        let favoritosData = await getFavoritos(token, userId);
+        // Obtener detalles de Google para cada uno (igual que en Favoritos.js)
+        favoritosData = await Promise.all(favoritosData.map(async (fav, idx) => {
           let placeId = fav.place_id;
-          // Debug inicio
-          console.log(`[DEBUG][Favoritos] (${idx}) fav.id_lugar:`, fav.id_lugar, 'fav.place_id:', fav.place_id);
-          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la tabla lugares usando el endpoint byid
           if (!placeId && fav.id_lugar) {
             try {
               const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${fav.id_lugar}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
-              console.log(`[DEBUG][Favoritos] (${idx}) place_id obtenido de /lugares/byid:`, placeId);
-            } catch (err) {
-              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo place_id de /lugares/byid:`, err);
-            }
+            } catch {}
           }
-          // Si ya tenemos placeId, obtenemos detalles de Google Places
           if (placeId) {
             try {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
-              console.log(`[DEBUG][Favoritos] (${idx}) Detalles de Google Places:`, placeDetail.data);
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
-                // Adaptar fotos tanto para API moderna como legacy
                 if (photos && photos.length > 0) {
                   photos = photos.map(p => {
                     if (p.photo_reference) {
@@ -80,7 +74,6 @@ const Favoritos = () => {
                     return null;
                   }).filter(Boolean);
                 }
-                console.log(`[DEBUG][Favoritos] (${idx}) Fotos adaptadas:`, photos);
                 return {
                   ...fav,
                   ...placeDetail.data.result,
@@ -92,8 +85,6 @@ const Favoritos = () => {
                   fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
                 };
               }
-              // Si no hay datos de Google, usar los del backend
-              console.warn(`[DEBUG][Favoritos] (${idx}) No hay datos de Google Places para place_id:`, placeId);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -102,7 +93,6 @@ const Favoritos = () => {
                 fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
               };
             } catch (e) {
-              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo detalles de Google Places:`, e);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -112,8 +102,6 @@ const Favoritos = () => {
               };
             }
           }
-          // Si no hay placeId, solo datos locales
-          console.warn(`[DEBUG][Favoritos] (${idx}) No se pudo obtener place_id para favorito`, fav);
           return {
             ...fav,
             displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -122,16 +110,20 @@ const Favoritos = () => {
             fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
           };
         }));
-        setFavoritos(favoritosRaw);
+        setFavoritos(favoritosData);
       } catch (err) {
-        setError("Error al cargar los favoritos");
+        setError("No se pudo cargar la lista de favoritos");
       }
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [userId]);
 
-  const filtered = useMemo(() => {
+  const handlePlaceClick = place => {
+    navigate(`/sitio/${place.place_id || place.id}`);
+  };
+
+  const filtered = React.useMemo(() => {
     if (!search.trim()) return favoritos;
     const normSearch = normalize(search);
     return favoritos.filter(v => normalize(v.nombre_lugar || v.name).includes(normSearch));
@@ -140,10 +132,6 @@ const Favoritos = () => {
   const sorted = sortFavoritos(filtered, sort);
   const totalPages = Math.ceil(sorted.length / FAVORITOS_PER_PAGE);
   const paginated = sorted.slice((page - 1) * FAVORITOS_PER_PAGE, page * FAVORITOS_PER_PAGE);
-
-  const handlePlaceClick = place => {
-    window.location.href = `/sitio/${place.place_id || place.id}`;
-  };
 
   return (
     <div className="page-container">
@@ -170,7 +158,7 @@ const Favoritos = () => {
           </div>
         </div>
         {loading ? (
-          <div>Cargando...</div>
+          <div style={{ color: "#ff9800" }}>Cargando...</div>
         ) : error ? (
           <div style={{ color: "#ff9800" }}>{error}</div>
         ) : (
@@ -193,4 +181,4 @@ const Favoritos = () => {
   );
 };
 
-export default Favoritos;
+export default AdminFavoritos;

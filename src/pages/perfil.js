@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
 import ReviewList from "../components/ReviewList";
 import PlacesList from "../components/PlacesList";
+import { getUsuarios, deleteUsuario } from "../api/usuarios";
+import { getFavoritos } from "../api/favoritos";
+import { getVisitados } from "../api/visitados";
+import { getResenasUsuario, deleteResena } from "../api/resenas";
 
 const Perfil = () => {
   const [user, setUser] = useState({ nombre: "", correo: "" });
@@ -36,17 +40,11 @@ const Perfil = () => {
       try {
         const token = localStorage.getItem("token");
         // Obtener datos usuario
-        const userRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const userData = userRes.data;
-        setUser(userData || {});
+        const userRes = await getUsuarios(token);
+        const userData = (userRes || []).find(u => String(u.id) === String(user.id)) || {};
+        setUser(userData);
         // Visitados
-        const visitadosRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/visitados`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        let visitadosData = visitadosRes.data || [];
-        // Si hay visitados, obtener detalles de Google para cada uno
+        let visitadosData = await getVisitados(token);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
           if (!placeId && v.id_lugar) {
@@ -107,11 +105,7 @@ const Perfil = () => {
         }));
         setVisitados(visitadosData);
         // Favoritos
-        const favRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/favoritos`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        let favoritosData = favRes.data || [];
-        // Si hay favoritos, obtener detalles de Google para cada uno
+        let favoritosData = await getFavoritos(token);
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
           let placeId = fav.place_id;
           if (!placeId && fav.id_lugar) {
@@ -157,10 +151,8 @@ const Perfil = () => {
         }));
         setFavoritos(favoritosData);
         // Comentarios propios
-        const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setComentarios(comRes.data || []);
+        const comRes = await getResenasUsuario(token);
+        setComentarios(comRes || []);
       } catch (err) {
         setError("Error al cargar datos del perfil");
       }
@@ -207,33 +199,19 @@ const Perfil = () => {
     );
   }
 
-  const handleDeleteAccount = async (e) => {
+  const handleDeleteUser = async (e) => {
     e.preventDefault();
     setDeleteError("");
     setDeleteLoading(true);
     try {
-      // Verificar credenciales
-      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, {
-        correo: deleteForm.correo,
-        contraseña: deleteForm.password
-      });
-      if (!res.data || !res.data.token) throw new Error("Credenciales incorrectas");
-      // Eliminar cuenta
       const token = localStorage.getItem("token");
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      localStorage.clear();
-      window.location.href = "/";
-      return; // Evita seguir ejecutando el formulario tras eliminar
+      await deleteUsuario(user.id, token);
+      setDeleteLoading(false);
+      window.location.href = "/login";
     } catch (err) {
-      let msg = "Error: credenciales incorrectas o no se pudo eliminar la cuenta";
-      if (err.response && err.response.data && (err.response.data.msg || err.response.data.error)) {
-        msg = err.response.data.msg || err.response.data.error;
-      }
-      setDeleteError(msg);
+      setDeleteError("No se pudo eliminar la cuenta");
+      setDeleteLoading(false);
     }
-    setDeleteLoading(false);
   };
 
   return (
@@ -260,7 +238,7 @@ const Perfil = () => {
                           Eliminar cuenta
                         </button>
                       ) : (
-                        <form onSubmit={handleDeleteAccount} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                        <form onSubmit={handleDeleteUser} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                           <div style={{ color: '#e53935', fontWeight: 600 }}>Esta acción es irreversible. Ingresa tus credenciales para confirmar:</div>
                           <input type="email" placeholder="Correo" value={deleteForm.correo} onChange={e => setDeleteForm({ ...deleteForm, correo: e.target.value })} required />
                           <input type="password" placeholder="Contraseña" value={deleteForm.password} onChange={e => setDeleteForm({ ...deleteForm, password: e.target.value })} required />
