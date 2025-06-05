@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# Rutas Gastronómicas - Frontend (web-rutas-gastronomicas)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este proyecto es el frontend de la aplicación **Rutas Gastronómicas**, desarrollado en React. Permite a los usuarios buscar, reseñar, marcar como visitados y guardar como favoritos restaurantes y otros lugares gastronómicos, así como gestionar su perfil y visualizar estadísticas. Los administradores pueden gestionar usuarios y ver el historial de acciones.
 
-## Available Scripts
+## Estructura del Proyecto
 
-In the project directory, you can run:
+- **src/pages/**: Páginas principales de la aplicación (perfil, favoritos, lugares visitados, reseñas, administración, etc).
+- **src/components/**: Componentes reutilizables (tarjetas de lugares, formularios, cabeceras, filtros, etc).
+- **src/api/**: Funciones para interactuar con la API backend (usuarios, favoritos, visitados, reseñas, historial).
+- **src/styles/**: Archivos CSS para los estilos globales y de páginas/componentes.
+- **public/**: Archivos estáticos y recursos (imágenes, index.html).
 
-### `npm start`
+## Principales Funcionalidades
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Autenticación y registro de usuarios**
+- **Búsqueda de lugares** (integración con Google Places)
+- **Gestión de lugares visitados y favoritos**
+- **Creación, edición y eliminación de reseñas**
+- **Perfil de usuario** con edición de datos y eliminación de cuenta
+- **Panel de administración** para gestión de usuarios y visualización de historial
+- **Paginación, ordenación y búsqueda** en todas las listas
+- **Interfaz moderna y responsive**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Scripts principales
 
-### `npm test`
+- `npm start`: Inicia la app en modo desarrollo en [http://localhost:3000](http://localhost:3000)
+- `npm run build`: Genera la versión optimizada para producción
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Variables de entorno necesarias
 
-### `npm run build`
+Crea un archivo `.env` en la raíz del proyecto con al menos:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+REACT_APP_API_BASE_URL=http://localhost:3000/api
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Ajusta la URL según la ubicación de tu backend.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Requisitos
 
-### `npm run eject`
+- Node.js 18+
+- Tener el backend de la API corriendo
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Estructura recomendada de carpetas
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+web-rutas-gastronomicas/
+  src/
+    pages/
+    components/
+    api/
+    styles/
+  public/
+  package.json
+  README.md
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Créditos
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Desarrollado por José Martín Arance. Proyecto académico y de aprendizaje.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Para dudas o mejoras, abre un issue o contacta al autor.
