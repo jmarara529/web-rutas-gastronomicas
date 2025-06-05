@@ -1,3 +1,7 @@
+// MIS RESEÑAS DEL USUARIO
+// Página donde el usuario puede ver, buscar, ordenar, editar y eliminar sus propias reseñas/comentarios.
+// Incluye paginación, ordenación y edición en línea.
+
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import ReviewList from "../components/ReviewList";
@@ -7,6 +11,7 @@ import SearchInputResenas from "../components/SearchInputResenas";
 
 const REVIEWS_PER_PAGE = 20;
 
+// Componente de estrellas para calificación
 function StarRating({ value, onChange }) {
   const [hover, setHover] = React.useState(null);
   return (
@@ -27,6 +32,7 @@ function StarRating({ value, onChange }) {
 }
 
 const MisResenas = () => {
+  // --- ESTADO PRINCIPAL ---
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,6 +49,7 @@ const MisResenas = () => {
   const isAdmin = localStorage.getItem("es_admin") === "true";
   const userId = localStorage.getItem("user_id");
 
+  // --- CARGA DE RESEÑAS DEL USUARIO ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -61,7 +68,7 @@ const MisResenas = () => {
     fetchData();
   }, []);
 
-  // Función de ordenación
+  // --- ORDENACIÓN Y FILTRADO ---
   function sortReviews(reviews, sortType) {
     if (!reviews) return [];
     let sorted = [...reviews];
@@ -80,29 +87,25 @@ const MisResenas = () => {
     }
     return sorted;
   }
-
-  // Función para normalizar texto (sin tildes, minúsculas)
   function normalize(str) {
     return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   }
-
-  // Filtrar por búsqueda
   const filtered = useMemo(() => {
     if (!search.trim()) return comentarios;
     const normSearch = normalize(search);
     return comentarios.filter(r => normalize(r.nombre_lugar).includes(normSearch));
   }, [comentarios, search]);
-
-  // Ordenar y paginar
   const sorted = sortReviews(filtered, sort);
   const totalPages = Math.ceil(sorted.length / REVIEWS_PER_PAGE);
   const paginated = sorted.slice((page - 1) * REVIEWS_PER_PAGE, page * REVIEWS_PER_PAGE);
 
+  // --- RENDER PRINCIPAL ---
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: '#fff' }}>
         <h1>Mis reseñas</h1>
+        {/* Barra de búsqueda y ordenación */}
         <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 220, maxWidth: 480 }}>
             <SearchInputResenas
@@ -122,6 +125,7 @@ const MisResenas = () => {
             </select>
           </div>
         </div>
+        {/* Lista de reseñas */}
         {loading ? (
           <div style={{ color: "#ff9800" }}>Cargando...</div>
         ) : error ? (

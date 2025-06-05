@@ -1,3 +1,7 @@
+// FAVORITOS DE UN USUARIO (ADMIN)
+// Página para que el administrador vea los favoritos de cualquier usuario.
+// Permite buscar, ordenar y navegar a los detalles de cada favorito.
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HeaderUser from "../components/HeaderUser";
@@ -8,10 +12,12 @@ import axios from "axios";
 
 const FAVORITOS_PER_PAGE = 20;
 
+// Normaliza texto para búsquedas (sin tildes, minúsculas)
 function normalize(str) {
   return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+// Ordena la lista de favoritos según el criterio seleccionado
 function sortFavoritos(arr, sortType) {
   let sorted = [...arr];
   if (sortType === "reciente") {
@@ -41,6 +47,7 @@ const AdminFavoritos = () => {
   const [sort, setSort] = useState("reciente");
   const [page, setPage] = useState(1);
 
+  // --- CARGA DE FAVORITOS DEL USUARIO Y ENRIQUECIMIENTO DE DATOS ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -119,25 +126,26 @@ const AdminFavoritos = () => {
     fetchData();
   }, [userId]);
 
+  // --- FILTRADO Y ORDENACIÓN DE FAVORITOS ---
   const handlePlaceClick = place => {
     navigate(`/sitio/${place.place_id || place.id}`);
   };
-
   const filtered = React.useMemo(() => {
     if (!search.trim()) return favoritos;
     const normSearch = normalize(search);
     return favoritos.filter(v => normalize(v.nombre_lugar || v.name).includes(normSearch));
   }, [favoritos, search]);
-
   const sorted = sortFavoritos(filtered, sort);
   const totalPages = Math.ceil(sorted.length / FAVORITOS_PER_PAGE);
   const paginated = sorted.slice((page - 1) * FAVORITOS_PER_PAGE, page * FAVORITOS_PER_PAGE);
 
+  // --- RENDER PRINCIPAL ---
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: '#fff' }}>
         <h1>Favoritos</h1>
+        {/* Barra de búsqueda y ordenación */}
         <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 220, maxWidth: 480 }}>
             <SearchInputResenas
@@ -157,6 +165,7 @@ const AdminFavoritos = () => {
             </select>
           </div>
         </div>
+        {/* Lista de favoritos */}
         {loading ? (
           <div style={{ color: "#ff9800" }}>Cargando...</div>
         ) : error ? (
@@ -169,6 +178,7 @@ const AdminFavoritos = () => {
             textoFecha="Fecha de añadido a favoritos"
           />
         )}
+        {/* Paginación */}
         {totalPages > 1 && (
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>

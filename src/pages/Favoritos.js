@@ -1,3 +1,7 @@
+// FAVORITOS DEL USUARIO
+// Página que muestra todos los lugares marcados como favoritos por el usuario logueado.
+// Permite buscar, ordenar y navegar a los detalles de cada lugar favorito.
+
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import SearchInputResenas from "../components/SearchInputResenas";
@@ -8,10 +12,12 @@ import "../styles/pages/page-common.css";
 
 const FAVORITOS_PER_PAGE = 20;
 
+// Normaliza texto para búsquedas (sin tildes, minúsculas)
 function normalize(str) {
   return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+// Ordena la lista de favoritos según el criterio seleccionado
 function sortFavoritos(arr, sortType) {
   let sorted = [...arr];
   if (sortType === "reciente") {
@@ -31,6 +37,7 @@ function sortFavoritos(arr, sortType) {
 }
 
 const Favoritos = () => {
+  // --- ESTADO PRINCIPAL ---
   const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,6 +46,7 @@ const Favoritos = () => {
   const [page, setPage] = useState(1);
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
+  // --- CARGA DE FAVORITOS Y ENRIQUECIMIENTO DE DATOS ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -46,27 +54,22 @@ const Favoritos = () => {
       try {
         const token = localStorage.getItem("token");
         let favoritosRaw = await getFavoritos(token);
+        // Enriquecer cada favorito con detalles de Google Places y fotos
         favoritosRaw = await Promise.all(favoritosRaw.map(async (fav, idx) => {
           let placeId = fav.place_id;
-          // Debug inicio
-          console.log(`[DEBUG][Favoritos] (${idx}) fav.id_lugar:`, fav.id_lugar, 'fav.place_id:', fav.place_id);
-          // Si no hay place_id pero sí id_lugar, intenta obtener el place_id desde la tabla lugares usando el endpoint byid
+          // Si no hay place_id pero sí id_lugar, intenta obtenerlo desde la tabla lugares
           if (!placeId && fav.id_lugar) {
             try {
               const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${fav.id_lugar}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
-              console.log(`[DEBUG][Favoritos] (${idx}) place_id obtenido de /lugares/byid:`, placeId);
-            } catch (err) {
-              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo place_id de /lugares/byid:`, err);
-            }
+            } catch (err) {}
           }
-          // Si ya tenemos placeId, obtenemos detalles de Google Places
+          // Si hay placeId, obtener detalles de Google Places
           if (placeId) {
             try {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
-              console.log(`[DEBUG][Favoritos] (${idx}) Detalles de Google Places:`, placeDetail.data);
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
                 // Adaptar fotos tanto para API moderna como legacy
@@ -80,7 +83,6 @@ const Favoritos = () => {
                     return null;
                   }).filter(Boolean);
                 }
-                console.log(`[DEBUG][Favoritos] (${idx}) Fotos adaptadas:`, photos);
                 return {
                   ...fav,
                   ...placeDetail.data.result,
@@ -93,7 +95,6 @@ const Favoritos = () => {
                 };
               }
               // Si no hay datos de Google, usar los del backend
-              console.warn(`[DEBUG][Favoritos] (${idx}) No hay datos de Google Places para place_id:`, placeId);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -102,7 +103,6 @@ const Favoritos = () => {
                 fecha_visita: fav.fecha_agregado || fav.fecha_visita || fav.fecha_favorito
               };
             } catch (e) {
-              console.error(`[DEBUG][Favoritos] (${idx}) Error obteniendo detalles de Google Places:`, e);
               return {
                 ...fav,
                 displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -113,7 +113,6 @@ const Favoritos = () => {
             }
           }
           // Si no hay placeId, solo datos locales
-          console.warn(`[DEBUG][Favoritos] (${idx}) No se pudo obtener place_id para favorito`, fav);
           return {
             ...fav,
             displayName: { text: fav.nombre_lugar || fav.nombre || "Sin nombre" },
@@ -131,6 +130,7 @@ const Favoritos = () => {
     fetchData();
   }, []);
 
+  // --- FILTRADO Y ORDENACIÓN DE FAVORITOS ---
   const filtered = useMemo(() => {
     if (!search.trim()) return favoritos;
     const normSearch = normalize(search);
@@ -141,15 +141,18 @@ const Favoritos = () => {
   const totalPages = Math.ceil(sorted.length / FAVORITOS_PER_PAGE);
   const paginated = sorted.slice((page - 1) * FAVORITOS_PER_PAGE, page * FAVORITOS_PER_PAGE);
 
+  // --- NAVEGACIÓN AL DETALLE DEL LUGAR ---
   const handlePlaceClick = place => {
     window.location.href = `/sitio/${place.place_id || place.id}`;
   };
 
+  // --- RENDER PRINCIPAL ---
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: '#fff' }}>
         <h1>Favoritos</h1>
+        {/* Barra de búsqueda y ordenación */}
         <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 220, maxWidth: 480 }}>
             <SearchInputResenas
@@ -169,6 +172,7 @@ const Favoritos = () => {
             </select>
           </div>
         </div>
+        {/* Lista de favoritos */}
         {loading ? (
           <div>Cargando...</div>
         ) : error ? (
@@ -181,6 +185,7 @@ const Favoritos = () => {
             textoFecha="Fecha de añadido a favoritos"
           />
         )}
+        {/* Paginación */}
         {totalPages > 1 && (
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>

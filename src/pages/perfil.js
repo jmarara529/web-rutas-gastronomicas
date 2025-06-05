@@ -1,3 +1,7 @@
+// PERFIL DEL USUARIO (Página principal de perfil)
+// Muestra los datos del usuario, sus lugares visitados, favoritos y comentarios.
+// Permite editar datos, eliminar cuenta y navegar a páginas de gestión.
+
 import React, { useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
 import PerfilBlock from "../components/PerfilBlock";
@@ -14,6 +18,7 @@ import { getVisitados } from "../api/visitados";
 import { getResenasUsuario, deleteResena } from "../api/resenas";
 
 const Perfil = () => {
+  // --- ESTADO PRINCIPAL ---
   const [user, setUser] = useState({ nombre: "", correo: "" });
   const [editMode, setEditMode] = useState(false);
   const [visitados, setVisitados] = useState([]);
@@ -21,12 +26,14 @@ const Perfil = () => {
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [menuOpen, setMenuOpen] = useState(null); // índice del comentario con menú abierto
+  // Estado para edición y eliminación de reseñas
+  const [menuOpen, setMenuOpen] = useState(null);
   const [editReviewId, setEditReviewId] = useState(null);
   const [editReviewText, setEditReviewText] = useState("");
   const [editReviewStars, setEditReviewStars] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
+  // Estado para eliminar cuenta
   const [showDelete, setShowDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -34,16 +41,17 @@ const Perfil = () => {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
+  // --- CARGA DE DATOS DEL USUARIO Y SUS LISTAS ---
   useEffect(() => {
     const fetchData = async () => {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        // Obtener datos usuario
+        // 1. Datos usuario
         const userRes = await getUsuarios(token);
         const userData = (userRes || []).find(u => String(u.id) === String(user.id)) || {};
         setUser(userData);
-        // Visitados
+        // 2. Lugares visitados (enriquecidos con detalles de Google)
         let visitadosData = await getVisitados(token);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
@@ -104,7 +112,7 @@ const Perfil = () => {
           };
         }));
         setVisitados(visitadosData);
-        // Favoritos
+        // 3. Favoritos (enriquecidos con detalles de Google)
         let favoritosData = await getFavoritos(token);
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
           let placeId = fav.place_id;
@@ -150,7 +158,7 @@ const Perfil = () => {
           return fav;
         }));
         setFavoritos(favoritosData);
-        // Comentarios propios
+        // 4. Comentarios propios
         const comRes = await getResenasUsuario(token);
         setComentarios(comRes || []);
       } catch (err) {
@@ -161,6 +169,7 @@ const Perfil = () => {
     fetchData();
   }, []);
 
+  // --- RECARGA AUTOMÁTICA EN CASO DE ERROR ---
   useEffect(() => {
     if (error) {
       const timeout = setTimeout(() => {
@@ -170,16 +179,16 @@ const Perfil = () => {
     }
   }, [error]);
 
+  // --- ACCIONES DE EDICIÓN Y NAVEGACIÓN ---
   const handleEdit = () => {
     if (user.id !== 1) setEditMode(true);
   };
   const handleCancel = () => setEditMode(false);
-
   const handlePlaceClick = place => {
     navigate(`/sitio/${place.place_id || place.id}`);
   };
 
-  // StarRating fuera del callback
+  // --- COMPONENTE DE ESTRELLAS PARA RESEÑAS ---
   function StarRating({ value, onChange }) {
     const [hover, setHover] = React.useState(null);
     return (
@@ -199,6 +208,7 @@ const Perfil = () => {
     );
   }
 
+  // --- ELIMINAR USUARIO ---
   const handleDeleteUser = async (e) => {
     e.preventDefault();
     setDeleteError("");
@@ -214,8 +224,10 @@ const Perfil = () => {
     }
   };
 
+  // --- RENDER PRINCIPAL ---
   return (
     <div className="page-container">
+      {/* Cabecera con menú de usuario */}
       <HeaderUser isAdmin={isAdmin} />
       <div className="content">
         <h1>Mi Perfil</h1>
@@ -227,10 +239,12 @@ const Perfil = () => {
           <>
             {/* DATOS USUARIO */}
             <PerfilBlock title="Datos de usuario" action={(!editMode && user.id !== 1) ? <button className="btn" onClick={handleEdit}>Editar</button> : null}>
+              {/* Muestra datos o formulario de edición */}
               {(!editMode || user.id === 1) ? (
                 <>
                   <div><b>Nombre:</b> {user.nombre}</div>
                   <div><b>Correo:</b> {user.correo}</div>
+                  {/* Botón para eliminar cuenta */}
                   {user.id !== 1 && (
                     <div style={{ marginTop: 16 }}>
                       {!showDelete ? (
@@ -253,6 +267,7 @@ const Perfil = () => {
                   )}
                 </>
               ) : (
+                // Formulario de edición de usuario
                 <DynamicUserForm
                   fields={[
                     { name: "nombre", label: "Nombre", type: "text", required: true, autoComplete: "name" },
@@ -308,10 +323,11 @@ const Perfil = () => {
             {/* FAVORITOS */}
             <PerfilBlock title="Favoritos" action={<button className="btn" onClick={() => navigate("/favoritos")}>Ver más</button>}>
               <div className="perfil-places-list">
+                {/* Mostrar favoritos recientes, con fecha de añadido */}
                 <PlacesList 
                   places={favoritos.slice(0, 3)}
                   onPlaceClick={handlePlaceClick}
-                  fechaKey="fecha_visita"
+                  fechaKey="fecha_agregado"
                   textoFecha="Fecha añadido a favoritos"
                 />
                 {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tienes favoritos aún.</div>}
