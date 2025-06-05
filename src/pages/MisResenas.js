@@ -194,6 +194,12 @@ const MisResenas = () => {
                 setReviewSubmitting(false);
               }}
               StarRating={StarRating}
+              // Evita navegación al sitio cuando se está editando
+              onReviewClick={r => {
+                if (editReviewId !== r.id) {
+                  window.location.href = `/sitio/${r.place_id || r.id_lugar}`;
+                }
+              }}
             />
           )
         )}

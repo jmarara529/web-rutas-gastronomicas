@@ -20,7 +20,8 @@ const ReviewList = ({
   onEditCancel,
   onDeleteReview,
   StarRating,
-  allowEdit = true // Nueva prop para controlar si se permite editar
+  allowEdit = true,
+  onReviewClick // NUEVA PROP para controlar el click en la review
 }) => (
   <ul className="reviews-list">
     {reviews.map((r, i) => {
@@ -28,11 +29,14 @@ const ReviewList = ({
       const canEdit = isOwner && allowEdit; // Solo el dueño puede editar si allowEdit es true
       const canDelete = isOwner || isAdmin;
       const userLabel = r.nombre_lugar || r.nombre_usuario || r.usuario || "";
+      const isEditing = editReviewId === r.id;
       return (
         <li key={i} className="review-app" style={{ position: 'relative', cursor: r.id_lugar ? 'pointer' : 'default' }}
           onClick={r.id_lugar ? async (e) => {
-            // Evita navegación si el click fue en el menú de opciones
+            // Evita navegación si el click fue en el menú de opciones o si está en modo edición
             if (e.target.closest('.review-menu-trigger, .review-menu')) return;
+            if (isEditing) return;
+            if (onReviewClick) { onReviewClick(r); return; }
             e.stopPropagation();
             try {
               const token = localStorage.getItem("token");

@@ -48,8 +48,18 @@ const Perfil = () => {
       try {
         const token = localStorage.getItem("token");
         // 1. Datos usuario
-        const userRes = await getUsuarios(token);
-        const userData = (userRes || []).find(u => String(u.id) === String(user.id)) || {};
+        // Si es usuario normal, obtener solo su propio usuario
+        let userData = {};
+        if (isAdmin) {
+          const userRes = await getUsuarios(token);
+          userData = (userRes || []).find(u => String(u.id) === String(user.id)) || {};
+        } else {
+          // Obtener datos del usuario autenticado
+          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          userData = res.data || {};
+        }
         setUser(userData);
         // 2. Lugares visitados (enriquecidos con detalles de Google)
         let visitadosData = await getVisitados(token);
@@ -398,6 +408,10 @@ const Perfil = () => {
                     setReviewSubmitting(false);
                   }}
                   StarRating={StarRating}
+                  // Evita navegación al sitio cuando se está editando
+                  onReviewClick={r => {
+                    if (editReviewId !== r.id) handlePlaceClick(r);
+                  }}
                 />
               )}
             </PerfilBlock>
