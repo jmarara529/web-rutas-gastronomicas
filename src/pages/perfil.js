@@ -12,10 +12,10 @@ import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
 import ReviewList from "../components/ReviewList";
 import PlacesList from "../components/PlacesList";
-import { getUsuarios, deleteUsuario } from "../api/usuarios";
+import { deleteUsuario } from "../api/usuarios";
 import { getFavoritos } from "../api/favoritos";
 import { getVisitados } from "../api/visitados";
-import { getResenasUsuario, deleteResena } from "../api/resenas";
+import { getResenasUsuario } from "../api/resenas";
 
 const Perfil = () => {
   // --- ESTADO PRINCIPAL ---
@@ -47,20 +47,11 @@ const Perfil = () => {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        // 1. Datos usuario
-        // Si es usuario normal, obtener solo su propio usuario
-        let userData = {};
-        if (isAdmin) {
-          const userRes = await getUsuarios(token);
-          userData = (userRes || []).find(u => String(u.id) === String(user.id)) || {};
-        } else {
-          // Obtener datos del usuario autenticado
-          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          userData = res.data || {};
-        }
-        setUser(userData);
+        // Obtener SIEMPRE los datos del usuario autenticado
+        const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(res.data || {});
         // 2. Lugares visitados (enriquecidos con detalles de Google)
         let visitadosData = await getVisitados(token);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
