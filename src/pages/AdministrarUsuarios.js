@@ -11,6 +11,9 @@ const AdministrarUsuarios = () => {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [errorUsuario, setErrorUsuario] = useState("");
+  const [search, setSearch] = useState("");
+  const [isAdminFilter, setIsAdminFilter] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
@@ -32,8 +35,41 @@ const AdministrarUsuarios = () => {
     fetchUsuarios();
   }, []);
 
-  const totalPages = useMemo(() => Math.ceil(usuarios.length / USUARIOS_POR_PAGINA), [usuarios]);
-  const paginados = useMemo(() => usuarios.slice((page - 1) * USUARIOS_POR_PAGINA, page * USUARIOS_POR_PAGINA), [usuarios, page]);
+  // Normaliza texto para búsquedas (sin tildes, minúsculas)
+  function normalize(str) {
+    return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  // Sugerencias en tiempo real
+  useEffect(() => {
+    if (!search.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const normSearch = normalize(search);
+    const filtered = usuarios.filter(u =>
+      normalize(u.nombre).includes(normSearch) || normalize(u.correo).includes(normSearch)
+    );
+    setSuggestions(filtered.slice(0, 5));
+  }, [search, usuarios]);
+
+  // Filtrado de usuarios
+  const usuariosFiltrados = useMemo(() => {
+    let filtrados = usuarios;
+    if (search.trim()) {
+      const normSearch = normalize(search);
+      filtrados = filtrados.filter(u =>
+        normalize(u.nombre).includes(normSearch) || normalize(u.correo).includes(normSearch)
+      );
+    }
+    if (isAdminFilter) {
+      filtrados = filtrados.filter(u => u.es_admin);
+    }
+    return filtrados;
+  }, [usuarios, search, isAdminFilter]);
+
+  const totalPages = useMemo(() => Math.ceil(usuariosFiltrados.length / USUARIOS_POR_PAGINA), [usuariosFiltrados]);
+  const paginados = useMemo(() => usuariosFiltrados.slice((page - 1) * USUARIOS_POR_PAGINA, page * USUARIOS_POR_PAGINA), [usuariosFiltrados, page]);
 
   return (
     <div className="page-container">
@@ -47,6 +83,55 @@ const AdministrarUsuarios = () => {
           <div style={{ color: "#e53935" }}>{error}</div>
         ) : (
           <>
+            <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1, minWidth: 0, maxWidth: 340, position: 'relative' }}>
+                <input
+                  className="text-input"
+                  type="text"
+                  placeholder="Buscar por nombre o correo..."
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  autoComplete="off"
+                  style={{ width: '100%' }}
+                />
+                {search && suggestions.length > 0 && (
+                  <ul style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: '#232323',
+                    borderRadius: 6,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                    zIndex: 10,
+                    margin: 0,
+                    padding: '4px 0',
+                    listStyle: 'none',
+                    maxHeight: 180,
+                    overflowY: 'auto',
+                    color: '#fff',
+                    fontSize: 15
+                  }}>
+                    {suggestions.map(u => (
+                      <li key={u.id} style={{ padding: '6px 12px', cursor: 'pointer' }}
+                        onClick={() => { setSearch(u.nombre); setSuggestions([]); }}>
+                        {u.nombre} <span style={{ color: '#aaa', fontSize: 13 }}>({u.correo})</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div style={{ minWidth: 120, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label htmlFor="admin-filter" style={{ color: '#ff9800', fontWeight: 500, cursor: 'pointer' }}>Solo admins</label>
+                <input
+                  id="admin-filter"
+                  type="checkbox"
+                  checked={isAdminFilter}
+                  onChange={e => { setIsAdminFilter(e.target.checked); setPage(1); }}
+                  style={{ width: 18, height: 18 }}
+                />
+              </div>
+            </div>
             {/* Vista tabla para pantallas grandes */}
             <table className="usuarios-table desktop-only" style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
               <thead>
