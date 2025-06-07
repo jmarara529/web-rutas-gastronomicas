@@ -99,13 +99,41 @@ const Search = () => {
     };
 
     const handleUseLocation = async () => {
+        setErrorMsg("");
+        setLoading(true);
         try {
-            const loc = await getCurrentLocation();
-            setLocation(loc);
-            const coordsText = `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`;
-            setQuery(coordsText);
+            if (!navigator.geolocation) {
+                setErrorMsg("La geolocalización no está soportada en este navegador.");
+                setLoading(false);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const loc = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    };
+                    setLocation(loc);
+                    setQuery(`${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`);
+                    setLoading(false);
+                },
+                (error) => {
+                    if (error.code === 1) {
+                        setErrorMsg("Debes permitir el acceso a la ubicación en los ajustes del navegador para usar esta función.");
+                    } else if (error.code === 2) {
+                        setErrorMsg("No se pudo determinar la ubicación. Intenta de nuevo.");
+                    } else if (error.code === 3) {
+                        setErrorMsg("La solicitud de ubicación ha expirado. Intenta de nuevo.");
+                    } else {
+                        setErrorMsg("No se pudo obtener la ubicación actual");
+                    }
+                    setLoading(false);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         } catch (err) {
             setErrorMsg("No se pudo obtener la ubicación actual");
+            setLoading(false);
         }
     };
 
