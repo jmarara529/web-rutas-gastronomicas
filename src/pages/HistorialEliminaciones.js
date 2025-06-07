@@ -11,10 +11,6 @@ const tipoEntidadMap = {
   lugar: "Lugar"
 };
 
-const accionesDisponibles = [
-  "añadir", "eliminar", "crear", "editar", "actualizar"
-];
-
 function normalize(str) {
   return str
     .normalize("NFD")
@@ -28,7 +24,6 @@ const HistorialEliminaciones = () => {
   const [error, setError] = useState("");
   const [filtroPor, setFiltroPor] = useState("");
   const [valorFiltro, setValorFiltro] = useState("");
-  const [opcionesUsuario, setOpcionesUsuario] = useState([]);
 
   useEffect(() => {
     const fetchHistorial = async () => {
@@ -40,10 +35,6 @@ const HistorialEliminaciones = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setHistorial(res.data || []);
-        // Opciones únicas de usuario para el filtro
-        // Extrae todos los valores únicos de 'ejecutado_por' del historial para usarlos como opciones de autocompletado en el filtro de usuario
-        const usuarios = Array.from(new Set((res.data || []).map(h => h.ejecutado_por).filter(Boolean)));
-        setOpcionesUsuario(usuarios);
       } catch (err) {
         setError("No se pudo cargar el historial de acciones");
       }
