@@ -5,13 +5,18 @@ import PlacesList from "../components/PlacesList";
 import { getVisitados } from "../api/visitados";
 import SearchInputResenas from "../components/SearchInputResenas";
 import axios from "axios";
+// import '../styles/pages/admin-lugares-visitados.css'; // Archivo no existe, se comenta para evitar error
+import "../styles/components/ui-common.css";
 
+// Número de lugares visitados por página
 const VISITADOS_PER_PAGE = 20;
 
+// Normaliza el texto para la búsqueda (elimina tildes y convierte a minúsculas)
 function normalize(str) {
   return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+// Ordena los lugares visitados según el criterio seleccionado
 function sortVisitados(arr, sortType) {
   let sorted = [...arr];
   if (sortType === "reciente") {
@@ -31,7 +36,9 @@ function sortVisitados(arr, sortType) {
 }
 
 const AdminLugaresVisitados = () => {
+  // Obtiene el userId de los parámetros de la URL
   const { userId } = useParams();
+  // Estados para la lista de lugares visitados, carga, error, búsqueda, orden y página actual
   const [visitados, setVisitados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,6 +48,7 @@ const AdminLugaresVisitados = () => {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
+  // Efecto para cargar los lugares visitados del usuario
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -48,9 +56,10 @@ const AdminLugaresVisitados = () => {
       try {
         const token = localStorage.getItem("token");
         let visitadosData = await getVisitados(token, userId);
-        // Obtener detalles de Google para cada uno (igual que en LugaresVisitados.js)
+        // Enriquecer datos de lugares visitados con información de Google Places
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
+          // Si no hay placeId, intentar obtenerlo desde la API propia
           if (!placeId && v.id_lugar) {
             try {
               const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${v.id_lugar}`, {
@@ -59,11 +68,13 @@ const AdminLugaresVisitados = () => {
               if (lugarRes.data && lugarRes.data.place_id) placeId = lugarRes.data.place_id;
             } catch {}
           }
+          // Si se tiene un placeId, obtener detalles desde Google Places
           if (placeId) {
             try {
               const placeDetail = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/places/detalles`, { params: { place_id: placeId } });
               if (placeDetail.data && placeDetail.data.result) {
                 let photos = placeDetail.data.result.photos;
+                // Normalizar fotos para el componente de presentación
                 if (photos && photos.length > 0) {
                   photos = photos.map(p => {
                     if (p.photo_reference) {
@@ -84,6 +95,7 @@ const AdminLugaresVisitados = () => {
                   ...(photos && photos.length > 0 ? { photos } : {})
                 };
               }
+              // Si no se pueden obtener detalles, retornar información básica del lugar visitado
               return {
                 ...v,
                 displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
@@ -99,6 +111,7 @@ const AdminLugaresVisitados = () => {
               };
             }
           }
+          // Retornar información básica si no hay placeId disponible
           return {
             ...v,
             displayName: { text: v.nombre_lugar || v.nombre || "Sin nombre" },
@@ -115,35 +128,42 @@ const AdminLugaresVisitados = () => {
     fetchData();
   }, [userId]);
 
+  // Maneja el clic en un lugar, navegando a la página de detalles
   const handlePlaceClick = place => {
     navigate(`/sitio/${place.place_id || place.id}`);
   };
 
+  // Filtra los lugares visitados según el texto de búsqueda
   const filtered = React.useMemo(() => {
     if (!search.trim()) return visitados;
     const normSearch = normalize(search);
     return visitados.filter(v => normalize(v.nombre_lugar).includes(normSearch));
   }, [visitados, search]);
 
+  // Ordena los lugares visitados filtrados según el criterio seleccionado
   const sorted = sortVisitados(filtered, sort);
+  // Calcula el número total de páginas para la paginación
   const totalPages = Math.ceil(sorted.length / VISITADOS_PER_PAGE);
+  // Obtiene los lugares visitados para la página actual
   const paginated = sorted.slice((page - 1) * VISITADOS_PER_PAGE, page * VISITADOS_PER_PAGE);
 
   return (
     <div className="page-container">
+      {/* Cabecera con información del usuario y navegación a admin si corresponde */}
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: '#fff' }}>
         <h1>Lugares visitados</h1>
-        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
+        {/* Filtros y opciones de ordenamiento */}
+        <div className="barra-filtros">
+          <div className="barra-busqueda">
             <SearchInputResenas
               value={search}
               onChange={val => { setSearch(val); setPage(1); }}
             />
           </div>
-          <div style={{ minWidth: 180, flex: '0 0 220px', textAlign: 'right' }}>
-            <label style={{ color: '#ff9800', fontWeight: 500, marginRight: 8 }}>Ordenar por:</label>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ padding: 4, borderRadius: 4, width: '60%' }}>
+          <div className="barra-orden">
+            <label className="barra-orden-label">Ordenar por:</label>
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} className="barra-orden-select">
               <option value="reciente">Fecha más reciente</option>
               <option value="antiguo">Fecha más antigua</option>
               <option value="sitio-asc">Sitio (A-Z)</option>
@@ -153,13 +173,12 @@ const AdminLugaresVisitados = () => {
             </select>
           </div>
         </div>
+        {error && <div className="estado-error">{error}</div>}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
-        ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : (
           paginated.length === 0 ? (
-            <div style={{ color: "#aaa" }}>No ha visitado ningún lugar aún.</div>
+            <div className="estado-vacio">No ha visitado ningún lugar aún.</div>
           ) : (
             <PlacesList 
               places={paginated}
@@ -170,9 +189,9 @@ const AdminLugaresVisitados = () => {
           )
         )}
         {totalPages > 1 && (
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
+          <div className="paginacion">
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-            <span style={{ color: "#ff9800", fontWeight: 500 }}>Página {page} de {totalPages}</span>
+            <span className="paginacion-info">Página {page} de {totalPages}</span>
             <button className="btn" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
           </div>
         )}

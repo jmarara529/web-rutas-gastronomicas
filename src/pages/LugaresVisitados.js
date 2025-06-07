@@ -8,6 +8,8 @@ import SearchInputResenas from "../components/SearchInputResenas";
 import PlacesList from "../components/PlacesList";
 import axios from "axios";
 import "../styles/pages/page-common.css";
+// import "../styles/pages/lugaresvisitados.css"; // Archivo no existe, se comenta para evitar error
+import "../styles/components/ui-common.css";
 
 const VISITADOS_PER_PAGE = 20;
 
@@ -141,16 +143,16 @@ const LugaresVisitados = () => {
       <div className="content" style={{ color: '#fff' }}>
         <h1>Lugares visitados</h1>
         {/* Barra de búsqueda y ordenación */}
-        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
+        <div className="barra-filtros">
+          <div className="barra-busqueda">
             <SearchInputResenas
               value={search}
               onChange={val => { setSearch(val); setPage(1); }}
             />
           </div>
-          <div style={{ minWidth: 180, flex: '0 0 220px', textAlign: 'right' }}>
-            <label style={{ color: '#ff9800', fontWeight: 500, marginRight: 8 }}>Ordenar por:</label>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ padding: 4, borderRadius: 4, width: '60%' }}>
+          <div className="barra-orden">
+            <label className="barra-orden-label">Ordenar por:</label>
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} className="barra-orden-select">
               <option value="reciente">Fecha más reciente</option>
               <option value="antiguo">Fecha más antigua</option>
               <option value="sitio-asc">Sitio (A-Z)</option>
@@ -160,14 +162,12 @@ const LugaresVisitados = () => {
             </select>
           </div>
         </div>
-        {/* Lista de lugares visitados */}
+        {error && <div className="estado-error">{error}</div>}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
-        ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : (
           paginated.length === 0 ? (
-            <div style={{ color: "#aaa" }}>No has visitado ningún lugar aún.</div>
+            <div className="estado-vacio">No has visitado ningún lugar aún.</div>
           ) : (
             <PlacesList 
               places={paginated}
@@ -177,11 +177,10 @@ const LugaresVisitados = () => {
             />
           )
         )}
-        {/* Paginación */}
         {totalPages > 1 && (
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
+          <div className="paginacion">
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-            <span style={{ color: "#ff9800", fontWeight: 500 }}>Página {page} de {totalPages}</span>
+            <span className="paginacion-info">Página {page} de {totalPages}</span>
             <button className="btn" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
           </div>
         )}

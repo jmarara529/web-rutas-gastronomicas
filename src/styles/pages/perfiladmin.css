@@ -1,0 +1,85 @@
+/* Vacío el archivo porque sus estilos han sido unificados en ui-common.css */
+
+.perfiladmin-eliminar-cuenta {
+  margin-top: 16px;
+}
+.perfiladmin-eliminar-btn {
+  background: #e53935 !important;
+  color: #fff !important;
+}
+.perfiladmin-eliminar-confirm {
+  margin-top: 8px;
+}
+.perfiladmin-eliminar-aviso {
+  color: #e53935;
+  font-weight: 600;
+}
+.perfiladmin-eliminar-botones {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.perfiladmin-eliminar-error {
+  color: #e53935;
+  font-weight: 500;
+}
+.perfiladmin-vacio {
+  color: #aaa;
+}
+.perfiladmin-extra-admin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.perfiladmin-admin-label {
+  font-weight: 500;
+}
+.perfiladmin-admin-checkbox {
+  margin-left: 8px;
+  margin-right: 4px;
+}
+.perfiladmin-admin-si {
+  color: #4caf50;
+  font-weight: 600;
+}
+.perfiladmin-admin-no {
+  color: #e53935;
+  font-weight: 600;
+}
+
+/* Interruptor visual para el checkbox de admin */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  vertical-align: middle;
+}
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  border-radius: 22px;
+  transition: .3s;
+}
+.switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .3s;
+}
+.switch input:checked + .slider,
+.switch .slider-on {
+  background-color: #ff9800;
+}
+.switch input:checked + .slider:before,
+.switch .slider-on:before {
+  transform: translateX(16px);
+}

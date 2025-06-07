@@ -1,13 +1,17 @@
+// Importa React y los componentes/estilos necesarios
 import React from "react";
 import HeaderHome from "../components/HeaderHome";
 import "../styles/pages/page-common.css";
 import "../styles/pages/privacy.css";
 
+// Componente de la página de política de privacidad
 const Privacy = () => {
     return (
         <div className="page-container">
+            {/* Cabecera de navegación principal */}
             <HeaderHome />
             <div className="content">
+                {/* Título y secciones de la política de privacidad */}
                 <h1>Política de Privacidad</h1>
                 <p>
                     En <strong>ComerAquí – Restaurantes y platillos recomendados en tu zona</strong>, valoramos y protegemos tu privacidad.  

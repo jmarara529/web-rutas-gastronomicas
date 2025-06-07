@@ -5,6 +5,7 @@ import { addPlaceToDB } from "../api/plazes/addPlace";
 import { addFavorite } from "../api/plazes/addFavorite";
 import "../styles/pages/page-common.css";
 import "../styles/pages/search.css";
+import "../styles/components/ui-common.css";
 import SearchInput from "../components/SearchInput";
 import RadiusSlider from "../components/RadiusSlider";
 import TypeFilters from "../components/TypeFilters";
@@ -169,8 +170,8 @@ const Search = () => {
                     <TypeFilters placeTypes={placeTypes} types={types} setTypes={setTypes} />
                     <button type="submit" disabled={loading}>Buscar</button>
                 </form>
-                {errorMsg && <div style={{ color: "#ff9800", margin: "12px 0" }}>{errorMsg}</div>}
-                {loading && <div>Buscando...</div>}
+                {errorMsg && <div className="estado-error">{errorMsg}</div>}
+                {loading && <div className="estado-cargando">Buscando...</div>}
                 <SearchResults results={results} onPlaceClick={handlePlaceClick} onAddFavorite={handleAddFavorite} />
             </div>
         </div>

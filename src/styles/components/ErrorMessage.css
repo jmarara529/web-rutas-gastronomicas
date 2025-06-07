@@ -1,3 +1,8 @@
+/*
+  ErrorMessage.css
+  Estilos para el componente de mensaje de error (.error-message)
+*/
+
 .error-message {
     color: #ff3333;
     background: rgba(255, 51, 51, 0.08);
@@ -11,6 +16,7 @@
     box-sizing: border-box;
 }
 
+/* Responsivo para mensajes de error */
 @media (max-width: 800px) {
     .error-message {
         font-size: 14px;

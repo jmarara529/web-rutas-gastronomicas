@@ -2,10 +2,13 @@ import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../styles/pages/admin-usuarios.css";
 
+// Número de usuarios por página
 const USUARIOS_POR_PAGINA = 20;
 
 const AdministrarUsuarios = () => {
+  // Estados para la lista de usuarios, carga, error, página, error de usuario, búsqueda, filtro de admin y sugerencias
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,6 +20,7 @@ const AdministrarUsuarios = () => {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
+  // Efecto para cargar la lista de usuarios al montar el componente
   useEffect(() => {
     const fetchUsuarios = async () => {
       setLoading(true);
@@ -35,12 +39,12 @@ const AdministrarUsuarios = () => {
     fetchUsuarios();
   }, []);
 
-  // Normaliza texto para búsquedas (sin tildes, minúsculas)
+  // Normaliza texto para búsquedas (elimina tildes y pasa a minúsculas)
   function normalize(str) {
     return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   }
 
-  // Sugerencias en tiempo real
+  // Efecto para mostrar sugerencias en tiempo real al buscar
   useEffect(() => {
     if (!search.trim()) {
       setSuggestions([]);
@@ -53,7 +57,7 @@ const AdministrarUsuarios = () => {
     setSuggestions(filtered.slice(0, 5));
   }, [search, usuarios]);
 
-  // Filtrado de usuarios
+  // Filtrado de usuarios por búsqueda y filtro de admin
   const usuariosFiltrados = useMemo(() => {
     let filtrados = usuarios;
     if (search.trim()) {
@@ -68,23 +72,29 @@ const AdministrarUsuarios = () => {
     return filtrados;
   }, [usuarios, search, isAdminFilter]);
 
+  // Cálculo de páginas totales y usuarios paginados
   const totalPages = useMemo(() => Math.ceil(usuariosFiltrados.length / USUARIOS_POR_PAGINA), [usuariosFiltrados]);
   const paginados = useMemo(() => usuariosFiltrados.slice((page - 1) * USUARIOS_POR_PAGINA, page * USUARIOS_POR_PAGINA), [usuariosFiltrados, page]);
 
+  // Render principal de la página de administración de usuarios
   return (
     <div className="page-container">
+      {/* Cabecera de usuario con menú de admin si corresponde */}
       <HeaderUser isAdmin={isAdmin} />
       <div className="content">
         <h1>Administrar Usuarios</h1>
+        {/* Mensaje de error específico al intentar editar usuario protegido */}
         {errorUsuario && <div style={{ color: "#e53935", margin: '12px 0', fontWeight: 600 }}>{errorUsuario}</div>}
+        {/* Mensaje de carga o error general */}
         {loading ? (
           <div style={{ color: "#ff9800" }}>Cargando...</div>
         ) : error ? (
           <div style={{ color: "#e53935" }}>{error}</div>
         ) : (
           <>
-            <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1, minWidth: 0, maxWidth: 340, position: 'relative' }}>
+            {/* Barra de búsqueda y filtro de admin */}
+            <div className="admin-usuarios-barra-filtros">
+              <div className="admin-usuarios-barra-busqueda" style={{ position: 'relative' }}>
                 <input
                   className="text-input"
                   type="text"
@@ -94,41 +104,26 @@ const AdministrarUsuarios = () => {
                   autoComplete="off"
                   style={{ width: '100%' }}
                 />
+                {/* Sugerencias en tiempo real */}
                 {search && suggestions.length > 0 && (
-                  <ul style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    background: '#232323',
-                    borderRadius: 6,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-                    zIndex: 10,
-                    margin: 0,
-                    padding: '4px 0',
-                    listStyle: 'none',
-                    maxHeight: 180,
-                    overflowY: 'auto',
-                    color: '#fff',
-                    fontSize: 15
-                  }}>
+                  <ul className="admin-usuarios-sugerencias">
                     {suggestions.map(u => (
-                      <li key={u.id} style={{ padding: '6px 12px', cursor: 'pointer' }}
+                      <li key={u.id} className="admin-usuarios-sugerencia-item"
                         onClick={() => { setSearch(u.nombre); setSuggestions([]); }}>
-                        {u.nombre} <span style={{ color: '#aaa', fontSize: 13 }}>({u.correo})</span>
+                        {u.nombre} <span className="admin-usuarios-sugerencia-correo">({u.correo})</span>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-              <div style={{ minWidth: 120, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label htmlFor="admin-filter" style={{ color: '#ff9800', fontWeight: 500, cursor: 'pointer' }}>Solo admins</label>
+              <div className="admin-usuarios-barra-admin">
+                <label htmlFor="admin-filter" className="admin-usuarios-barra-admin-label">Solo admins</label>
                 <input
                   id="admin-filter"
                   type="checkbox"
                   checked={isAdminFilter}
                   onChange={e => { setIsAdminFilter(e.target.checked); setPage(1); }}
-                  style={{ width: 18, height: 18 }}
+                  className="admin-usuarios-barra-admin-checkbox"
                 />
               </div>
             </div>
@@ -144,6 +139,7 @@ const AdministrarUsuarios = () => {
                 </tr>
               </thead>
               <tbody>
+                {/* Fila por cada usuario, permite navegar a la edición salvo el usuario protegido */}
                 {paginados.map(u => (
                   <tr key={u.id} style={{ borderBottom: "1px solid #333", cursor: "pointer" }}
                     onClick={() => {
@@ -185,6 +181,7 @@ const AdministrarUsuarios = () => {
                 </div>
               ))}
             </div>
+            {/* Paginación si hay varias páginas */}
             {totalPages > 1 && (
               <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
                 <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>

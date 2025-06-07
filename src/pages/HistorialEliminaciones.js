@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import axios from "axios";
+import "../styles/pages/historial-eliminaciones.css";
 
 const tipoEntidadMap = {
   usuario: "Usuario",
@@ -40,6 +41,7 @@ const HistorialEliminaciones = () => {
         });
         setHistorial(res.data || []);
         // Opciones únicas de usuario para el filtro
+        // Extrae todos los valores únicos de 'ejecutado_por' del historial para usarlos como opciones de autocompletado en el filtro de usuario
         const usuarios = Array.from(new Set((res.data || []).map(h => h.ejecutado_por).filter(Boolean)));
         setOpcionesUsuario(usuarios);
       } catch (err) {
@@ -77,16 +79,16 @@ const HistorialEliminaciones = () => {
       <div className="content">
         <h1>Historial de Acciones</h1>
         {/* Filtros */}
-        <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 16 }}>
-          <label style={{ color: "#ff9800", fontWeight: 500 }}>Filtrar por:</label>
-          <select value={filtroPor} onChange={e => { setFiltroPor(e.target.value); setValorFiltro(""); }} style={{ padding: 4, borderRadius: 4 }}>
+        <div className="historial-filtros">
+          <label className="historial-filtros-label">Filtrar por:</label>
+          <select value={filtroPor} onChange={e => { setFiltroPor(e.target.value); setValorFiltro(""); }} className="historial-filtros-select">
             <option value="">---</option>
             <option value="tipo">Tipo</option>
             <option value="accion">Acción</option>
             <option value="usuario">Ejecutado por</option>
           </select>
           {filtroPor === "tipo" && (
-            <select value={valorFiltro} onChange={e => setValorFiltro(e.target.value)} style={{ padding: 4, borderRadius: 4 }}>
+            <select value={valorFiltro} onChange={e => setValorFiltro(e.target.value)} className="historial-filtros-select">
               <option value="">---</option>
               {tiposDisponibles.map(tipo => (
                 <option key={tipo} value={tipo}>{tipoEntidadMap[tipo] || tipo}</option>
@@ -94,7 +96,7 @@ const HistorialEliminaciones = () => {
             </select>
           )}
           {filtroPor === "accion" && (
-            <select value={valorFiltro} onChange={e => setValorFiltro(e.target.value)} style={{ padding: 4, borderRadius: 4 }}>
+            <select value={valorFiltro} onChange={e => setValorFiltro(e.target.value)} className="historial-filtros-select">
               <option value="">---</option>
               {accionesUnicas.map(accion => (
                 <option key={accion} value={accion}>{accion}</option>
@@ -107,7 +109,7 @@ const HistorialEliminaciones = () => {
               value={valorFiltro}
               onChange={e => setValorFiltro(e.target.value)}
               placeholder="Buscar usuario..."
-              style={{ padding: 4, borderRadius: 4, minWidth: 180 }}
+              className="historial-filtros-input"
               list="usuarios-list"
             />
           )}
@@ -119,28 +121,28 @@ const HistorialEliminaciones = () => {
         </div>
         {/* Tabla */}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
+          <div className="historial-cargando">Cargando...</div>
         ) : error ? (
-          <div style={{ color: "#e53935" }}>{error}</div>
+          <div className="historial-error">{error}</div>
         ) : historialFiltrado.length === 0 ? (
-          <div style={{ color: "#aaa" }}>No hay acciones registradas.</div>
+          <div className="historial-vacio">No hay acciones registradas.</div>
         ) : (
           <>
             {/* Vista tabla para pantallas grandes */}
-            <table className="historial-table desktop-only" style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
+            <table className="historial-table desktop-only">
               <thead>
-                <tr style={{ color: "#ff9800", fontWeight: 600 }}>
-                  <th style={{ padding: 8 }}>Fecha</th>
-                  <th style={{ padding: 8 }}>Tipo</th>
-                  <th style={{ padding: 8 }}>Acción</th>
-                  <th style={{ padding: 8 }}>ID Entidad</th>
-                  <th style={{ padding: 8 }}>Ejecutado por</th>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Acción</th>
+                  <th>ID Entidad</th>
+                  <th>Ejecutado por</th>
                 </tr>
               </thead>
               <tbody>
                 {historialFiltrado.map((h) => (
-                  <tr key={h.id} style={{ borderBottom: "1px solid #333" }}>
-                    <td style={{ padding: 8 }}>
+                  <tr key={h.id}>
+                    <td>
                       {h.fecha_accion ? (() => {
                         const d = new Date(h.fecha_accion);
                         if (isNaN(d)) return '-';
@@ -150,10 +152,10 @@ const HistorialEliminaciones = () => {
                         return `${dia}-${mes}-${anio}`;
                       })() : '-'}
                     </td>
-                    <td style={{ padding: 8 }}>{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</td>
-                    <td style={{ padding: 8 }}>{h.accion || '-'}</td>
-                    <td style={{ padding: 8 }}>{h.id_entidad}</td>
-                    <td style={{ padding: 8 }}>{h.ejecutado_por || "-"}</td>
+                    <td>{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</td>
+                    <td>{h.accion || '-'}</td>
+                    <td>{h.id_entidad}</td>
+                    <td>{h.ejecutado_por || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -161,7 +163,7 @@ const HistorialEliminaciones = () => {
             {/* Vista lista para móviles */}
             <div className="historial-list mobile-only">
               {historialFiltrado.map((h) => (
-                <div key={h.id} className="historial-list-item" style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, marginBottom: 16, padding: 12 }}>
+                <div key={h.id} className="historial-list-item">
                   <div><b>Fecha:</b> {h.fecha_accion ? (() => {
                     const d = new Date(h.fecha_accion);
                     if (isNaN(d)) return '-';

@@ -1,0 +1,56 @@
+.historial-filtros {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.historial-filtros-label {
+  color: #ff9800;
+  font-weight: 500;
+}
+.historial-filtros-select {
+  padding: 4px;
+  border-radius: 4px;
+}
+.historial-filtros-input {
+  padding: 4px;
+  border-radius: 4px;
+  min-width: 180px;
+}
+.historial-table {
+  width: 100%;
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  border-radius: 8px;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+.historial-table th {
+  color: #ff9800;
+  font-weight: 600;
+  padding: 8px;
+}
+.historial-table td {
+  padding: 8px;
+}
+.historial-table tr {
+  border-bottom: 1px solid #333;
+}
+.historial-list {
+  margin-top: 24px;
+}
+.historial-list-item {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+}
+.historial-cargando {
+  color: #ff9800;
+}
+.historial-error {
+  color: #e53935;
+}
+.historial-vacio {
+  color: #aaa;
+}

@@ -1,0 +1,58 @@
+.admin-usuarios-barra-filtros {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.admin-usuarios-barra-busqueda {
+  flex: 1;
+  min-width: 0;
+  max-width: 340px;
+  position: relative;
+}
+.admin-usuarios-sugerencias {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #232323;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  z-index: 10;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 180px;
+  overflow-y: auto;
+  color: #fff;
+  font-size: 15px;
+}
+.admin-usuarios-sugerencia-item {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.admin-usuarios-sugerencia-item:hover {
+  background: #ff9800;
+  color: #222;
+}
+.admin-usuarios-sugerencia-correo {
+  color: #aaa;
+  font-size: 13px;
+}
+.admin-usuarios-barra-admin {
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-usuarios-barra-admin-label {
+  color: #ff9800;
+  font-weight: 500;
+  cursor: pointer;
+}
+.admin-usuarios-barra-admin-checkbox {
+  width: 18px;
+  height: 18px;
+}

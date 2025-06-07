@@ -1,8 +1,16 @@
+// Importa React y el componente PlaceCard para mostrar cada lugar
 import React from "react";
 import PlaceCard from "./PlaceCard";
 
+// Componente para mostrar una lista de lugares
+// Recibe:
+// - places: array de lugares a mostrar
+// - onPlaceClick: función que se ejecuta al hacer click en una tarjeta
+// - fechaKey: clave para extraer la fecha relevante de cada lugar (por defecto 'fecha_visita')
+// - textoFecha: texto personalizado para mostrar junto a la fecha
 const PlacesList = ({ places, onPlaceClick, fechaKey = "fecha_visita", textoFecha }) => (
   <ul style={{ listStyle: "none", padding: 0 }}>
+    {/* Itera sobre cada lugar y renderiza una PlaceCard */}
     {places.map((place, i) => (
       <li key={place.id || place.place_id || place._id || i} style={{ margin: "12px 0" }}>
         <PlaceCard

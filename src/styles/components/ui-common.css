@@ -1,0 +1,75 @@
+/*
+  ui-common.css
+  Estilos globales reutilizables para la UI de la aplicación.
+  Incluye: barra de filtros, mensajes de estado, paginación, estrellas genéricas y botón de eliminación.
+*/
+
+/* Barra de filtros y ordenación (usada en listados y buscadores) */
+.barra-filtros {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.barra-busqueda {
+  flex: 1;
+  min-width: 0;
+  max-width: 340px;
+}
+.barra-orden {
+  min-width: 180px;
+  flex: 0 0 220px;
+  text-align: right;
+}
+.barra-orden-label {
+  color: #ff9800;
+  font-weight: 500;
+  margin-right: 8px;
+}
+.barra-orden-select {
+  padding: 4px;
+  border-radius: 4px;
+  width: 60%;
+}
+
+/* Mensajes de estado generales (cargando, error, vacío) */
+.estado-cargando {
+  color: #ff9800;
+}
+.estado-error {
+  color: #ff9800;
+}
+.estado-vacio {
+  color: #aaa;
+}
+
+/* Paginación común */
+.paginacion {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+}
+.paginacion-info {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+/* Estrellas de calificación genéricas */
+.star-rating {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ff9800;
+}
+.star {
+  margin-right: 2px;
+}
+
+/* Botón de eliminación global */
+.btn-eliminar {
+  background: #e53935 !important;
+  color: #fff !important;
+}

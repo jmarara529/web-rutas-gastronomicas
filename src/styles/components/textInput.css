@@ -1,3 +1,8 @@
+/*
+  textInput.css
+  Estilos para el componente TextInput (input de texto general)
+*/
+
 .text-input {
     width: 100%;
     padding: 10px;
@@ -17,6 +22,7 @@
     box-shadow: 0 0 4px #ff980033;
 }
 
+/* Responsivo para el input de texto */
 @media (max-width: 800px) {
     .text-input {
         font-size: 15px;

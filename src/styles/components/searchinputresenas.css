@@ -1,3 +1,8 @@
+/*
+  searchinputresenas.css
+  Estilos para el componente SearchInputResenas (input de búsqueda de reseñas)
+*/
+
 .searchinput-resenas {
   width: 100%;
   padding: 8px 12px;
@@ -12,6 +17,8 @@
 .searchinput-resenas:focus {
   border: 1.5px solid #fff;
 }
+
+/* Responsivo para el input de búsqueda de reseñas */
 @media (max-width: 550px) {
   .searchinput-resenas,
   .text-input {

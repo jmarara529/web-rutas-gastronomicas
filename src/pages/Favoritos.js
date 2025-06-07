@@ -9,6 +9,8 @@ import PlacesList from "../components/PlacesList";
 import { getFavoritos } from "../api/favoritos";
 import axios from "axios";
 import "../styles/pages/page-common.css";
+import "../styles/components/ui-common.css";
+// import "../styles/pages/favoritos.css"; // Archivo no existe, se comenta para evitar error
 
 const FAVORITOS_PER_PAGE = 20;
 
@@ -131,17 +133,22 @@ const Favoritos = () => {
   }, []);
 
   // --- FILTRADO Y ORDENACIÓN DE FAVORITOS ---
+  // Filtra los favoritos según el texto de búsqueda (ignora tildes y mayúsculas)
   const filtered = useMemo(() => {
     if (!search.trim()) return favoritos;
     const normSearch = normalize(search);
     return favoritos.filter(v => normalize(v.nombre_lugar || v.name).includes(normSearch));
   }, [favoritos, search]);
 
+  // Ordena los favoritos filtrados según el criterio seleccionado
   const sorted = sortFavoritos(filtered, sort);
+  // Calcula el número total de páginas
   const totalPages = Math.ceil(sorted.length / FAVORITOS_PER_PAGE);
+  // Obtiene los favoritos de la página actual
   const paginated = sorted.slice((page - 1) * FAVORITOS_PER_PAGE, page * FAVORITOS_PER_PAGE);
 
   // --- NAVEGACIÓN AL DETALLE DEL LUGAR ---
+  // Redirige a la página de detalle del lugar seleccionado
   const handlePlaceClick = place => {
     window.location.href = `/sitio/${place.place_id || place.id}`;
   };
@@ -149,20 +156,21 @@ const Favoritos = () => {
   // --- RENDER PRINCIPAL ---
   return (
     <div className="page-container">
+      {/* Cabecera de usuario con menú de admin si corresponde */}
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: '#fff' }}>
         <h1>Favoritos</h1>
         {/* Barra de búsqueda y ordenación */}
-        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
+        <div className="barra-filtros">
+          <div className="barra-busqueda">
             <SearchInputResenas
               value={search}
               onChange={val => { setSearch(val); setPage(1); }}
             />
           </div>
-          <div style={{ minWidth: 180, flex: '0 0 220px', textAlign: 'right' }}>
-            <label style={{ color: '#ff9800', fontWeight: 500, marginRight: 8 }}>Ordenar por:</label>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ padding: 4, borderRadius: 4, width: '60%' }}>
+          <div className="barra-orden">
+            <label className="barra-orden-label">Ordenar por:</label>
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} className="barra-orden-select">
               <option value="reciente">Fecha más reciente</option>
               <option value="antiguo">Fecha más antigua</option>
               <option value="sitio-asc">Sitio (A-Z)</option>
@@ -172,24 +180,25 @@ const Favoritos = () => {
             </select>
           </div>
         </div>
-        {/* Lista de favoritos */}
+        {error && <div className="estado-error">{error}</div>}
         {loading ? (
-          <div>Cargando...</div>
-        ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : (
-          <PlacesList 
-            places={paginated}
-            onPlaceClick={handlePlaceClick}
-            fechaKey="fecha_agregado"
-            textoFecha="Fecha de añadido a favoritos"
-          />
+          paginated.length === 0 ? (
+            <div className="estado-vacio">No tienes favoritos aún.</div>
+          ) : (
+            <PlacesList 
+              places={paginated}
+              onPlaceClick={handlePlaceClick}
+              fechaKey="fecha_agregado"
+              textoFecha="Fecha de añadido a favoritos"
+            />
+          )
         )}
-        {/* Paginación */}
         {totalPages > 1 && (
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
+          <div className="paginacion">
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-            <span style={{ color: "#ff9800", fontWeight: 500 }}>Página {page} de {totalPages}</span>
+            <span className="paginacion-info">Página {page} de {totalPages}</span>
             <button className="btn" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
           </div>
         )}

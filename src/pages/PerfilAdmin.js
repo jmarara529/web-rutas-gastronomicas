@@ -10,6 +10,7 @@ import { getUsuarios, updateUsuario, deleteUsuario } from "../api/usuarios";
 import { getFavoritos } from "../api/favoritos";
 import { getVisitados } from "../api/visitados";
 import { getResenasUsuario, deleteResena } from "../api/resenas";
+import "../styles/pages/perfiladmin.css";
 
 const PerfilAdmin = () => {
   const { userId } = useParams();
@@ -24,6 +25,7 @@ const PerfilAdmin = () => {
   const [deleteError, setDeleteError] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(null);
+  const [formUser, setFormUser] = useState(null);
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
@@ -36,9 +38,19 @@ const PerfilAdmin = () => {
         // Obtener datos usuario
         const userRes = await getUsuarios(token);
         const userData = (userRes || []).find(u => String(u.id) === String(userId)) || {};
-        setUser(userData);
-        // Favoritos
+        console.log('Datos usuario obtenidos en fetchData:', userData);
+        // Normalizar es_admin a booleano para el formulario
+        const normalizedUser = {
+          ...userData,
+          es_admin: userData.es_admin === true || userData.es_admin === 1 || userData.es_admin === "1" || userData.es_admin === "true"
+        };
+        console.log('Usuario normalizado en fetchData:', normalizedUser);
+        setUser(normalizedUser);
+        // Favoritos (ordenados por fecha de agregado descendente y limitados a 3)
         let favoritosData = await getFavoritos(token, userId);
+        favoritosData = favoritosData
+          .sort((a, b) => new Date(b.fecha_agregado) - new Date(a.fecha_agregado))
+          .slice(0, 3);
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
           let placeId = fav.place_id;
           if (!placeId && fav.id_lugar) {
@@ -91,8 +103,11 @@ const PerfilAdmin = () => {
           };
         }));
         setFavoritos(favoritosData);
-        // Visitados
+        // Visitados (ordenados por fecha de visita descendente y limitados a 3)
         let visitadosData = await getVisitados(token, userId);
+        visitadosData = visitadosData
+          .sort((a, b) => new Date(b.fecha_visita) - new Date(a.fecha_visita))
+          .slice(0, 3);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
           if (!placeId && v.id_lugar) {
@@ -145,9 +160,12 @@ const PerfilAdmin = () => {
           };
         }));
         setVisitados(visitadosData);
-        // Comentarios
+        // Comentarios (ordenados por fecha descendente y limitados a 3)
         const comRes = await getResenasUsuario(token, userId);
-        setComentarios(comRes || []);
+        const comentariosRecientes = (comRes || [])
+          .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+          .slice(0, 3);
+        setComentarios(comentariosRecientes);
       } catch (err) {
         setError("Error al cargar datos del usuario");
       }
@@ -156,7 +174,27 @@ const PerfilAdmin = () => {
     fetchData();
   }, [userId]);
 
-  const handleEdit = () => setEditMode(true);
+  const handleEdit = async () => {
+    // Al pulsar editar, consulta el valor actualizado de es_admin directamente de la API
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const userData = res.data || {};
+      console.log('Datos usuario obtenidos en handleEdit:', userData);
+      setFormUser({
+        ...userData,
+        es_admin: userData.es_admin === true || userData.es_admin === 1 || userData.es_admin === "1" || userData.es_admin === "true"
+      });
+      setEditMode(true);
+    } catch (err) {
+      setError("No se pudo obtener el estado de administrador actualizado");
+      console.error('Error en handleEdit:', err);
+    }
+    setLoading(false);
+  };
   const handleCancel = () => setEditMode(false);
 
   const handleSave = async (form) => {
@@ -212,68 +250,83 @@ const PerfilAdmin = () => {
         {loading ? (
           <div>Cargando...</div>
         ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="perfiladmin-error">{error}</div>
         ) : (
           <>
-            <PerfilBlock title="Datos de usuario" action={!editMode && user.id !== 1 ? <button className="btn" onClick={handleEdit}>Editar</button> : null}>
+            <PerfilBlock title="Datos de usuario" action={!editMode && user.id !== 1 && user.correo ? <button className="btn" onClick={handleEdit}>Editar</button> : null}>
+              {/* Muestra datos o formulario de edición */}
               {(!editMode || user.id === 1) ? (
                 <>
                   <div><b>Nombre:</b> {user.nombre}</div>
                   <div><b>Correo:</b> {user.correo}</div>
                   <div><b>Administrador:</b> {user.es_admin ? "Sí" : "No"}</div>
+                  {/* Botón para eliminar usuario */}
                   {user.id !== 1 && (
-                    <div style={{ marginTop: 16 }}>
+                    <div className="perfiladmin-eliminar-cuenta">
                       {!showDelete ? (
-                        <button className="btn" style={{ background: '#e53935', color: '#fff' }} onClick={() => setShowDelete(true)}>
+                        <button className="btn perfiladmin-eliminar-btn" onClick={() => setShowDelete(true)}>
                           Eliminar usuario
                         </button>
                       ) : (
-                        <div style={{ marginTop: 8 }}>
-                          <div style={{ color: '#e53935', fontWeight: 600 }}>¿Seguro que deseas eliminar este usuario? Esta acción es irreversible.</div>
-                          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                            <button className="btn" style={{ background: '#e53935', color: '#fff' }} onClick={handleDeleteUser} disabled={deleteLoading}>Aceptar</button>
+                        <div className="perfiladmin-eliminar-confirm">
+                          <div className="perfiladmin-eliminar-aviso">¿Seguro que deseas eliminar este usuario? Esta acción es irreversible.</div>
+                          <div className="perfiladmin-eliminar-botones">
+                            <button className="btn perfiladmin-eliminar-btn" onClick={handleDeleteUser} disabled={deleteLoading}>Aceptar</button>
                             <button className="btn" onClick={() => setShowDelete(false)} disabled={deleteLoading}>Cancelar</button>
                           </div>
-                          {deleteError && <div style={{ color: '#e53935', fontWeight: 500 }}>{deleteError}</div>}
+                          {deleteError && <div className="perfiladmin-eliminar-error">{deleteError}</div>}
                         </div>
                       )}
                     </div>
                   )}
                 </>
               ) : (
-                <DynamicUserForm
-                  fields={[
-                    { name: "nombre", label: "Nombre", type: "text", required: true, autoComplete: "name" },
-                    { name: "correo", label: "Correo", type: "email", required: true, autoComplete: "email" },
-                    { name: "password", label: "Contraseña", type: "password", required: false, autoComplete: "new-password", placeholder: "Nueva contraseña" },
-                  ]}
-                  initialValues={user}
-                  onSubmit={handleSave}
-                  onCancel={handleCancel}
-                  loading={loading}
-                  error={error}
-                  submitText="Guardar"
-                  showCancel={true}
-                  renderExtraFields={(form, handleChange) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                      <label style={{ fontWeight: 500 }}>
-                        Administrador:
-                        <input
-                          type="checkbox"
-                          name="es_admin"
-                          checked={!!form.es_admin}
-                          onChange={e => handleChange({ target: { name: 'es_admin', value: e.target.checked } })}
-                          style={{ marginLeft: 8, marginRight: 4 }}
-                        />
-                        <span style={{ color: !!form.es_admin ? '#4caf50' : '#e53935', fontWeight: 600 }}>
-                          {form.es_admin ? 'Sí' : 'No'}
-                        </span>
-                      </label>
-                    </div>
-                  )}
-                />
+                // Formulario de edición de usuario
+                formUser && (
+                  <DynamicUserForm
+                    key={formUser.id || formUser.correo || 'form'}
+                    fields={[
+                      { name: "nombre", label: "Nombre", type: "text", required: true, autoComplete: "name" },
+                      { name: "correo", label: "Correo", type: "email", required: true, autoComplete: "email" },
+                      { name: "password", label: "Contraseña", type: "password", required: false, autoComplete: "new-password", placeholder: "Nueva contraseña" },
+                      { name: "es_admin", type: "hidden" } // <-- Añadido para que el formulario controle es_admin
+                    ]}
+                    initialValues={formUser}
+                    onSubmit={handleSave}
+                    onCancel={() => { setEditMode(false); setFormUser(null); }}
+                    loading={loading}
+                    error={error}
+                    submitText="Guardar"
+                    showCancel={true}
+                    renderExtraFields={(form, handleChange) => {
+                      console.log('Valores del formulario en renderExtraFields:', form);
+                      return (
+                        <div className="perfiladmin-extra-admin">
+                          <label className="perfiladmin-admin-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            Administrador:
+                            <span className="switch">
+                              <input
+                                type="checkbox"
+                                name="es_admin"
+                                checked={!!form.es_admin}
+                                onChange={e => handleChange({ target: { name: 'es_admin', value: e.target.checked } })}
+                                className="perfiladmin-admin-checkbox"
+                                style={{ display: 'none' }}
+                              />
+                              <span className={form.es_admin ? "slider slider-on" : "slider"}></span>
+                            </span>
+                            <span className={form.es_admin ? "perfiladmin-admin-si" : "perfiladmin-admin-no"}>
+                              {form.es_admin ? 'Sí' : 'No'}
+                            </span>
+                          </label>
+                        </div>
+                      );
+                    }}
+                  />
+                )
               )}
             </PerfilBlock>
+            {/* LUGARES VISITADOS */}
             <PerfilBlock title="Lugares visitados" action={
               <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/lugares-visitados`)}>
                 Ver todos
@@ -285,8 +338,9 @@ const PerfilAdmin = () => {
                 fechaKey="fecha_visita"
                 textoFecha="Fecha de visita"
               />
-              {visitados.length === 0 && <div style={{ color: "#aaa" }}>No ha visitado ningún lugar aún.</div>}
+              {visitados.length === 0 && <div className="perfiladmin-vacio">No ha visitado ningún lugar aún.</div>}
             </PerfilBlock>
+            {/* FAVORITOS */}
             <PerfilBlock title="Favoritos" action={
               <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/favoritos`)}>
                 Ver todos
@@ -298,8 +352,9 @@ const PerfilAdmin = () => {
                 fechaKey="fecha_visita"
                 textoFecha="Fecha añadido a favoritos"
               />
-              {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tiene favoritos aún.</div>}
+              {favoritos.length === 0 && <div className="perfiladmin-vacio">No tiene favoritos aún.</div>}
             </PerfilBlock>
+            {/* COMENTARIOS */}
             <PerfilBlock title="Comentarios" action={
               <button className="btn" onClick={() => navigate(`/admin/usuario/${userId}/comentarios`)}>
                 Ver todos
@@ -314,7 +369,7 @@ const PerfilAdmin = () => {
                 allowEdit={false}
                 onDeleteReview={handleDeleteReview}
               />
-              {comentarios.length === 0 && <div style={{ color: "#aaa" }}>No ha escrito comentarios aún.</div>}
+              {comentarios.length === 0 && <div className="perfiladmin-vacio">No ha escrito comentarios aún.</div>}
             </PerfilBlock>
           </>
         )}

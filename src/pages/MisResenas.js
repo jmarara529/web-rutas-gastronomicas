@@ -7,6 +7,8 @@ import HeaderUser from "../components/HeaderUser";
 import ReviewList from "../components/ReviewList";
 import axios from "axios";
 import "../styles/pages/page-common.css";
+// import "../styles/pages/misresenas.css"; // Archivo no existe, se comenta para evitar error
+import "../styles/components/ui-common.css";
 import SearchInputResenas from "../components/SearchInputResenas";
 
 const REVIEWS_PER_PAGE = 20;
@@ -14,15 +16,16 @@ const REVIEWS_PER_PAGE = 20;
 // Componente de estrellas para calificación
 function StarRating({ value, onChange }) {
   const [hover, setHover] = React.useState(null);
+  // Renderiza las estrellas con clases CSS en vez de estilos en línea
   return (
-    <span style={{ fontSize: 24, cursor: "pointer", color: "#ff9800" }}>
+    <span className="misresenas-star-rating">
       {[1,2,3,4,5].map(star => (
         <span
           key={star}
           onClick={() => onChange(star)}
           onMouseOver={() => setHover(star)}
           onMouseOut={() => setHover(null)}
-          style={{ marginRight: 2 }}
+          className="misresenas-star"
         >
           {star <= (hover !== null ? hover : value) ? '★' : '☆'}
         </span>
@@ -103,19 +106,19 @@ const MisResenas = () => {
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
-      <div className="content" style={{ color: '#fff' }}>
+      <div className="content perfil-content">
         <h1>Mis reseñas</h1>
         {/* Barra de búsqueda y ordenación */}
-        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
+        <div className="barra-filtros">
+          <div className="barra-busqueda">
             <SearchInputResenas
               value={search}
               onChange={val => { setSearch(val); setPage(1); }}
             />
           </div>
-          <div style={{ minWidth: 180, flex: '0 0 220px', textAlign: 'right' }}>
-            <label style={{ color: '#ff9800', fontWeight: 500, marginRight: 8 }}>Ordenar por:</label>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ padding: 4, borderRadius: 4, width: '60%' }}>
+          <div className="barra-orden">
+            <label className="barra-orden-label">Ordenar por:</label>
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} className="barra-orden-select">
               <option value="reciente">Fecha más reciente</option>
               <option value="antiguo">Fecha más antigua</option>
               <option value="mejor">Mayor calificación</option>
@@ -126,88 +129,101 @@ const MisResenas = () => {
           </div>
         </div>
         {/* Lista de reseñas */}
+        {error && <div className="estado-error">{error}</div>}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
-        ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : (
           paginated.length === 0 ? (
-            <div style={{ color: "#aaa" }}>No has escrito reseñas aún.</div>
+            <div className="estado-vacio">No has escrito reseñas aún.</div>
           ) : (
-            <ReviewList
-              reviews={paginated}
-              userId={userId}
-              isAdmin={isAdmin}
-              menuOpen={menuOpen}
-              setMenuOpen={setMenuOpen}
-              editReviewId={editReviewId}
-              editReviewText={editReviewText}
-              editReviewStars={editReviewStars}
-              setEditReviewId={setEditReviewId}
-              setEditReviewText={setEditReviewText}
-              setEditReviewStars={setEditReviewStars}
-              reviewSubmitting={reviewSubmitting}
-              reviewError={reviewError}
-              onEditClick={(r) => { setEditReviewId(r.id); setEditReviewText(r.comentario); setEditReviewStars(r.calificacion); setMenuOpen(null); }}
-              onEditSave={async () => {
-                setReviewSubmitting(true);
-                setReviewError("");
-                try {
-                  const token = localStorage.getItem("token");
-                  await axios.put(`${process.env.REACT_APP_API_BASE_URL}/resenas/${editReviewId}`, {
-                    calificacion: editReviewStars,
-                    comentario: editReviewText
-                  }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                  });
-                  // Recargar comentarios
-                  const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  setComentarios(comRes.data || []);
-                  setEditReviewId(null);
-                  setEditReviewText("");
-                  setEditReviewStars(0);
-                } catch (err) {
-                  setReviewError("No se pudo editar la reseña");
-                }
-                setReviewSubmitting(false);
-              }}
-              onEditCancel={() => { setEditReviewId(null); setEditReviewText(""); setEditReviewStars(0); }}
-              onDeleteReview={async (id) => {
-                if (!window.confirm("¿Seguro que quieres eliminar esta reseña?")) return;
-                setReviewSubmitting(true);
-                setReviewError("");
-                try {
-                  const token = localStorage.getItem("token");
-                  await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                  });
-                  // Recargar comentarios
-                  const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  setComentarios(comRes.data || []);
-                } catch (err) {
-                  setReviewError("No se pudo eliminar la reseña");
-                }
-                setReviewSubmitting(false);
-              }}
-              StarRating={StarRating}
-              // Evita navegación al sitio cuando se está editando
-              onReviewClick={r => {
-                if (editReviewId !== r.id) {
-                  window.location.href = `/sitio/${r.place_id || r.id_lugar}`;
-                }
-              }}
-            />
+            <div className="perfil-places-list">
+              <ReviewList
+                reviews={paginated}
+                userId={userId}
+                isAdmin={isAdmin}
+                menuOpen={menuOpen}
+                setMenuOpen={setMenuOpen}
+                editReviewId={editReviewId}
+                editReviewText={editReviewText}
+                editReviewStars={editReviewStars}
+                setEditReviewId={setEditReviewId}
+                setEditReviewText={setEditReviewText}
+                setEditReviewStars={setEditReviewStars}
+                reviewSubmitting={reviewSubmitting}
+                reviewError={reviewError}
+                onEditClick={(r) => { setEditReviewId(r.id); setEditReviewText(r.comentario); setEditReviewStars(r.calificacion); setMenuOpen(null); }}
+                onEditSave={async () => {
+                  setReviewSubmitting(true);
+                  setReviewError("");
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.put(`${process.env.REACT_APP_API_BASE_URL}/resenas/${editReviewId}`, {
+                      calificacion: editReviewStars,
+                      comentario: editReviewText
+                    }, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    // Recargar comentarios
+                    const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setComentarios(comRes.data || []);
+                    setEditReviewId(null);
+                    setEditReviewText("");
+                    setEditReviewStars(0);
+                  } catch (err) {
+                    setReviewError("No se pudo editar la reseña");
+                  }
+                  setReviewSubmitting(false);
+                }}
+                onEditCancel={() => { setEditReviewId(null); setEditReviewText(""); setEditReviewStars(0); }}
+                onDeleteReview={async (id) => {
+                  if (!window.confirm("¿Seguro que quieres eliminar esta reseña?")) return;
+                  setReviewSubmitting(true);
+                  setReviewError("");
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/resenas/${id}`, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    // Recargar comentarios
+                    const comRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/resenas/usuario`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setComentarios(comRes.data || []);
+                  } catch (err) {
+                    setReviewError("No se pudo eliminar la reseña");
+                  }
+                  setReviewSubmitting(false);
+                }}
+                StarRating={StarRating}
+                onReviewClick={async r => {
+                  if (editReviewId !== r.id) {
+                    const placeId = r.place_id;
+                    if (placeId) {
+                      window.location.href = `/sitio/${placeId}`;
+                    } else if (r.id_lugar) {
+                      try {
+                        const token = localStorage.getItem("token");
+                        const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${r.id_lugar}`, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (lugarRes.data && lugarRes.data.place_id) {
+                          window.location.href = `/sitio/${lugarRes.data.place_id}`;
+                        }
+                      } catch {}
+                    }
+                  }
+                }}
+              />
+            </div>
           )
         )}
         {/* Paginación */}
         {totalPages > 1 && (
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
+          <div className="paginacion">
             <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-            <span style={{ color: "#ff9800", fontWeight: 500 }}>Página {page} de {totalPages}</span>
+            <span className="paginacion-info">Página {page} de {totalPages}</span>
             <button className="btn" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
           </div>
         )}

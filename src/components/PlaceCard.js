@@ -1,29 +1,34 @@
-import React, { useState, useEffect } from "react";
+// Importa React y hooks necesarios
+import React, { useState } from "react";
 import "../styles/pages/search.css";
 
-// Recibe la prop fechaVisita
+// Componente para mostrar la información de un lugar en una tarjeta visual
+// Recibe props: place (objeto del lugar), onClick (handler al hacer click), onAddFavorite (handler para agregar a favoritos), fechaVisita (fecha opcional), textoFecha (texto personalizado para la fecha)
 const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) => {
+  // Estado para controlar si la imagen ya se cargó
   const [imgLoaded, setImgLoaded] = useState(false);
+  // Obtiene el nombre del lugar de diferentes posibles campos
   const name = place.displayName?.text || place.name || place.nombre_lugar || "Sin nombre";
+  // Obtiene la calificación del lugar
   const rating = place.rating || place.calificacion || "-";
 
-  // Formatear la fecha si está disponible
+  // Formatea la fecha de visita si está disponible
   let fechaVisitaStr = "";
   let fechaDebug = fechaVisita;
   if (!fechaVisita && place) {
     fechaDebug = place.fecha_visita || place.fecha_agregado || place.fecha_favorito;
   }
-  // Forzar a mostrar la fecha si existe, aunque sea string ISO
+  // Si hay fecha, la formatea a DD/MM/AAAA o muestra el string original
   if (fechaDebug && typeof fechaDebug === 'string' && fechaDebug.length > 6) {
-    // Mostrar en consola para depuración
+    // Muestra en consola para depuración
     console.log('DEBUG fechaVisita:', fechaDebug, place);
-    // Extraer solo la parte de fecha si es formato ISO
+    // Extrae solo la parte de fecha si es formato ISO
     let fechaSolo = fechaDebug.split('T')[0];
     if (/^\d{4}-\d{2}-\d{2}$/.test(fechaSolo)) {
       const [anio, mes, dia] = fechaSolo.split('-');
       fechaVisitaStr = `${textoFecha || 'Fecha de visita'}: ${dia}/${mes}/${anio}`;
     } else {
-      // Fallback a Date si no es ISO
+      // Si no es ISO, intenta formatear con Date
       const d = new Date(fechaDebug);
       if (!isNaN(d) && d.getFullYear() > 1970) {
         const dia = d.getDate().toString().padStart(2, '0');
@@ -33,25 +38,25 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
       }
     }
   }
-  // DEBUG: Forzar renderizado de la fecha para pruebas
+  // Si no se pudo formatear, muestra la fecha como string
   if (!fechaVisitaStr && fechaDebug) {
     fechaVisitaStr = `${textoFecha || 'Fecha de visita'}: ${fechaDebug}`;
   }
 
-  // Unifica la lógica de obtención de imagen para evitar inconsistencias y usa siempre el mismo tamaño
+  // Función para obtener la URL de la imagen del lugar
   function getImgSrc(place) {
     if (place && place.photos && place.photos.length > 0) {
-      // DEBUG: Mostrar cómo viene el campo photos
+      // Muestra en consola para depuración
       console.log('[DEBUG][PlaceCard] photos:', place.photos);
       const p = place.photos[0];
-      // Prueba todos los casos posibles
+      // Diferentes formatos posibles para la imagen
       if (p.name && p.name.startsWith('photo_reference/')) {
-        // Legacy: photo_reference en name
+        // Formato legacy: photo_reference en name
         const ref = p.name.replace('photo_reference/', '');
         console.log('[DEBUG][PlaceCard] Usando photo_reference en name:', ref);
         return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(ref)}`;
       } else if (p.photo_reference) {
-        // Legacy: photo_reference directo
+        // Formato legacy: photo_reference directo
         console.log('[DEBUG][PlaceCard] Usando photo_reference directo:', p.photo_reference);
         return `${process.env.REACT_APP_API_BASE_URL}/places/photo?photo_reference=${encodeURIComponent(p.photo_reference)}`;
       } else if (p.name) {
@@ -65,14 +70,14 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
       // Imagen local o personalizada
       return place.fotos[0];
     }
+    // Imagen por defecto si no hay ninguna disponible
     return process.env.PUBLIC_URL + "/images/nophoto.png";
   }
 
+  // Obtiene la URL de la imagen a mostrar
   const imgSrc = getImgSrc(place);
 
-  // Elimina la precarga duplicada y solo marca como cargada cuando la imagen real se carga
-  // Limpia logs de depuración
-
+  // Renderiza la tarjeta del lugar
   return (
     <div className="place-card" tabIndex={0} role="button" onClick={onClick}>
       <img
@@ -85,6 +90,7 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
       />
       <div className="place-card-center">
         <div className="place-card-title">{name}</div>
+        {/* Muestra la fecha de visita si está disponible */}
         {fechaVisitaStr && (
           <div style={{ fontSize: 13, color: '#bbb', margin: '4px 0 0 0' }}>{fechaVisitaStr}</div>
         )}

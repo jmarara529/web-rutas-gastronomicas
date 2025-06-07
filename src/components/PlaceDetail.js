@@ -1,4 +1,4 @@
-// Reemplazar todo el contenido por el PlaceDetail completo y funcional migrado desde search/PlaceDetail.js
+// Componente PlaceDetail: muestra la información detallada de un lugar, incluyendo imagen, datos, mapa y reseñas
 import React, { useState, useEffect } from "react";
 import Tabs from "./Tabs";
 import { addReview, getReviews } from "../api/plazes/reviews";
@@ -9,7 +9,7 @@ import { getLugarId } from "../api/plazes/getLugarId";
 import "../styles/pages/search.css";
 
 const PlaceDetail = ({ place }) => {
-  // Copio la función getImgSrc de PlaceCard para unificar la lógica de imagen
+  // Función para obtener la URL de la imagen del lugar (unifica lógica con PlaceCard)
   function getImgSrc(place) {
     if (place && place.photos && place.photos.length > 0) {
       const p = place.photos[0];
@@ -27,6 +27,7 @@ const PlaceDetail = ({ place }) => {
     return process.env.PUBLIC_URL + "/images/nophoto.png";
   }
 
+  // Estados para imagen, reseñas, favoritos, visitados, etc.
   const [imgSrc, setImgSrc] = useState(getImgSrc(place));
   const [imgLoaded, setImgLoaded] = useState(false);
   const [googleReviews, setGoogleReviews] = useState([]);
@@ -39,6 +40,7 @@ const PlaceDetail = ({ place }) => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const isAdmin = localStorage.getItem("es_admin") === "true";
+  // Obtiene el userId del localStorage o lo decodifica del token si no está
   let userId = localStorage.getItem("user_id");
   if (!userId) {
     try {
@@ -50,6 +52,7 @@ const PlaceDetail = ({ place }) => {
       }
     } catch {}
   }
+  // Estados para menú de opciones de reseña y edición de reseñas
   const [menuOpen, setMenuOpen] = useState(null);
   const [editReviewId, setEditReviewId] = useState(null);
   const [editReviewText, setEditReviewText] = useState("");
@@ -58,11 +61,13 @@ const PlaceDetail = ({ place }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isVisitado, setIsVisitado] = useState(false);
 
+  // Actualiza la imagen cuando cambia el lugar
   useEffect(() => {
     setImgSrc(getImgSrc(place));
     setImgLoaded(false);
   }, [place]);
 
+  // Carga las reseñas de Google y de la app cuando cambia el lugar
   useEffect(() => {
     if (!place) return;
     setReviewsLoading(true);
@@ -75,6 +80,7 @@ const PlaceDetail = ({ place }) => {
       .finally(() => setReviewsLoading(false));
   }, [place]);
 
+  // Obtiene la URL del mapa embebido usando la API del backend
   useEffect(() => {
     if (!place) return setEmbedUrl(null);
     let lat = null, lng = null;
@@ -95,6 +101,7 @@ const PlaceDetail = ({ place }) => {
     }
   }, [place]);
 
+  // Consulta si el lugar es favorito o visitado por el usuario
   useEffect(() => {
     const fetchStates = async () => {
       const token = localStorage.getItem("token");
@@ -124,6 +131,7 @@ const PlaceDetail = ({ place }) => {
     if (place && (place.id || place.place_id)) fetchStates();
   }, [place]);
 
+  // Función para ordenar reseñas según el criterio seleccionado
   function sortReviews(reviews, sortType, isGoogle = false) {
     if (!reviews) return [];
     let sorted = [...reviews];
@@ -147,6 +155,7 @@ const PlaceDetail = ({ place }) => {
     return sorted;
   }
 
+  // Envía una nueva reseña de la app
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     setReviewSubmitting(true);
@@ -168,6 +177,7 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
+  // Elimina una reseña de la app
   const handleDeleteReview = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar esta reseña?")) return;
     setReviewSubmitting(true);
@@ -185,6 +195,7 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
+  // Inicia la edición de una reseña
   const handleEditClick = (review) => {
     setEditReviewId(review.id);
     setEditReviewText(review.comentario);
@@ -192,6 +203,7 @@ const PlaceDetail = ({ place }) => {
     setMenuOpen(null);
   };
 
+  // Guarda los cambios de una reseña editada
   const handleEditSave = async () => {
     setReviewSubmitting(true);
     setReviewError("");
@@ -214,12 +226,14 @@ const PlaceDetail = ({ place }) => {
     setReviewSubmitting(false);
   };
 
+  // Cancela la edición de una reseña
   const handleEditCancel = () => {
     setEditReviewId(null);
     setEditReviewText("");
     setEditReviewStars(0);
   };
 
+  // Maneja la lógica de agregar o eliminar de favoritos
   const handleFavorite = async () => {
     const token = localStorage.getItem("token");
     if (!isFavorite) {
@@ -237,6 +251,7 @@ const PlaceDetail = ({ place }) => {
     }
   };
 
+  // Maneja la lógica de agregar o eliminar de visitados
   const handleVisitado = async () => {
     const token = localStorage.getItem("token");
     if (!isVisitado) {
@@ -254,7 +269,9 @@ const PlaceDetail = ({ place }) => {
     }
   };
 
+  // Si no hay datos del lugar, muestra un mensaje
   if (!place) return <div>No hay datos del sitio.</div>;
+  // Obtiene nombre, calificación y coordenadas del lugar
   const name = place.displayName?.text || place.name || "Sin nombre";
   const rating = place.rating || "-";
   let lat = null, lng = null;
@@ -266,6 +283,7 @@ const PlaceDetail = ({ place }) => {
     lng = place.geometry.location.lng;
   }
 
+  // Componente interno para mostrar y seleccionar estrellas de calificación
   function StarRating({ value, onChange }) {
     const [hover, setHover] = useState(null);
     return (
@@ -285,6 +303,7 @@ const PlaceDetail = ({ place }) => {
     );
   }
 
+  // Renderiza las reseñas de la app, con opciones de editar/eliminar
   function renderAppReviews() {
     return (
       <ul className="reviews-list">
@@ -340,8 +359,10 @@ const PlaceDetail = ({ place }) => {
     );
   }
 
+  // Render principal del componente
   return (
     <div className="place-detail">
+      {/* Imagen principal del lugar */}
       <img
         src={imgSrc}
         alt={name}
@@ -349,12 +370,19 @@ const PlaceDetail = ({ place }) => {
         onLoad={() => setImgLoaded(true)}
         onError={() => setImgLoaded(true)}
       />
+      {/* Nombre del lugar */}
       <h2>{name}</h2>
+      {/* Dirección del lugar */}
       <div><b>Dirección:</b> {place.formattedAddress || place.vicinity || "-"}</div>
+      {/* Calificación promedio */}
       <div><b>Calificación:</b> {rating}</div>
+      {/* Tipos o categorías del lugar */}
       <div><b>Tipos:</b> {place.types && place.types.join(", ")}</div>
+      {/* Enlace al sitio web si existe */}
       {place.websiteUri && <div><a href={place.websiteUri} target="_blank" rel="noopener noreferrer">Sitio web</a></div>}
+      {/* Teléfono si existe */}
       {place.nationalPhoneNumber && <div><b>Teléfono:</b> {place.nationalPhoneNumber}</div>}
+      {/* Mapa embebido si hay coordenadas */}
       {lat && lng && (
         <div style={{ position: "relative", margin: "24px 0" }}>
           {embedUrl ? (
@@ -376,6 +404,7 @@ const PlaceDetail = ({ place }) => {
           )}
         </div>
       )}
+      {/* Botones de favoritos y visitados */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
         <button className="btn" onClick={handleFavorite} style={{ background: isFavorite ? '#e53935' : '#ff9800', color: '#fff' }}>
           {isFavorite ? 'Eliminar de favoritos' : 'Añadir a favoritos'}
@@ -384,12 +413,14 @@ const PlaceDetail = ({ place }) => {
           {isVisitado ? 'Eliminar de visitados' : 'Marcar como visitado'}
         </button>
       </div>
+      {/* Pestañas de comentarios: Google y app */}
       <Tabs
         tabs={[
           {
             label: `Comentarios de Google (${googleReviews.length})`,
             content: (
               <>
+                {/* Selector de orden para comentarios de Google */}
                 <div style={{ marginBottom: 8 }}>
                   <label>Ordenar por: </label>
                   <select value={googleSort} onChange={e => setGoogleSort(e.target.value)}>
@@ -399,17 +430,23 @@ const PlaceDetail = ({ place }) => {
                     <option value="peor">Peor calificación</option>
                   </select>
                 </div>
+                {/* Lista de comentarios de Google */}
                 {reviewsLoading ? (
                   <div>Cargando comentarios...</div>
                 ) : googleReviews.length === 0 ? (
                   <div>No hay comentarios de Google.</div>
                 ) : (
                   <ul className="reviews-list">
+                    {/* Cada comentario de Google */}
                     {sortReviews(googleReviews, googleSort, true).map((r, i) => (
                       <li key={i} className="review-google">
+                        {/* Nombre del autor */}
                         <div style={{ fontWeight: 500 }}>{r.author_name || r.author || "Usuario Google"}</div>
+                        {/* Calificación */}
                         <div>⭐ {r.rating}</div>
+                        {/* Texto del comentario */}
                         <div style={{ fontStyle: "italic" }}>{r.text}</div>
+                        {/* Fecha relativa o timestamp */}
                         <div style={{ fontSize: 12, color: "#aaa" }}>{r.relative_time_description || r.time}</div>
                       </li>
                     ))}
@@ -422,6 +459,7 @@ const PlaceDetail = ({ place }) => {
             label: `Comentarios de la app (${appReviews.length})`,
             content: (
               <>
+                {/* Selector de orden para comentarios de la app */}
                 <div style={{ marginBottom: 8 }}>
                   <label>Ordenar por: </label>
                   <select value={appSort} onChange={e => setAppSort(e.target.value)}>
@@ -431,12 +469,16 @@ const PlaceDetail = ({ place }) => {
                     <option value="peor">Peor calificación</option>
                   </select>
                 </div>
+                {/* Formulario para agregar una nueva reseña */}
                 <form style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }} onSubmit={handleSubmitReview}>
                   <input type="text" placeholder="Tu comentario..." style={{ width: "60%" }} required value={reviewText} onChange={e => setReviewText(e.target.value)} />
+                  {/* Componente de estrellas para calificación */}
                   <StarRating value={reviewStars} onChange={setReviewStars} />
                   <button type="submit" disabled={reviewSubmitting || !reviewStars || !reviewText}>Enviar</button>
                 </form>
+                {/* Mensaje de error al enviar reseña */}
                 {reviewError && <div style={{ color: '#ff9800', marginBottom: 8 }}>{reviewError}</div>}
+                {/* Lista de comentarios de la app */}
                 {reviewsLoading ? (
                   <div>Cargando comentarios...</div>
                 ) : appReviews.length === 0 ? (

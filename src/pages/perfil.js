@@ -7,6 +7,8 @@ import HeaderUser from "../components/HeaderUser";
 import PerfilBlock from "../components/PerfilBlock";
 import "../styles/pages/page-common.css";
 import "../styles/pages/search.css";
+import "../styles/pages/perfil.css";
+import "../styles/components/ui-common.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
@@ -52,8 +54,11 @@ const Perfil = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(res.data || {});
-        // 2. Lugares visitados (enriquecidos con detalles de Google)
+        // 2. Lugares visitados (enriquecidos con detalles de Google, ordenados por fecha descendente y limitados a 3)
         let visitadosData = await getVisitados(token);
+        visitadosData = visitadosData
+          .sort((a, b) => new Date(b.fecha_visita) - new Date(a.fecha_visita))
+          .slice(0, 3);
         visitadosData = await Promise.all(visitadosData.map(async (v) => {
           let placeId = v.place_id;
           if (!placeId && v.id_lugar) {
@@ -113,8 +118,11 @@ const Perfil = () => {
           };
         }));
         setVisitados(visitadosData);
-        // 3. Favoritos (enriquecidos con detalles de Google)
+        // 3. Favoritos (ordenados por fecha de agregado descendente y limitados a 3)
         let favoritosData = await getFavoritos(token);
+        favoritosData = favoritosData
+          .sort((a, b) => new Date(b.fecha_agregado) - new Date(a.fecha_agregado))
+          .slice(0, 3);
         favoritosData = await Promise.all(favoritosData.map(async (fav) => {
           let placeId = fav.place_id;
           if (!placeId && fav.id_lugar) {
@@ -159,9 +167,12 @@ const Perfil = () => {
           return fav;
         }));
         setFavoritos(favoritosData);
-        // 4. Comentarios propios
+        // 4. Comentarios propios (ordenados por fecha descendente y limitados a 3)
         const comRes = await getResenasUsuario(token);
-        setComentarios(comRes || []);
+        const comentariosRecientes = (comRes || [])
+          .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+          .slice(0, 3);
+        setComentarios(comentariosRecientes);
       } catch (err) {
         setError("Error al cargar datos del perfil");
       }
@@ -192,15 +203,16 @@ const Perfil = () => {
   // --- COMPONENTE DE ESTRELLAS PARA RESEÑAS ---
   function StarRating({ value, onChange }) {
     const [hover, setHover] = React.useState(null);
+    // Renderiza las estrellas con clases CSS en vez de estilos en línea
     return (
-      <span style={{ fontSize: 24, cursor: "pointer", color: "#ff9800" }}>
+      <span className="perfil-star-rating">
         {[1,2,3,4,5].map(star => (
           <span
             key={star}
             onClick={() => onChange(star)}
             onMouseOver={() => setHover(star)}
             onMouseOut={() => setHover(null)}
-            style={{ marginRight: 2 }}
+            className="perfil-star"
           >
             {star <= (hover !== null ? hover : value) ? '★' : '☆'}
           </span>
@@ -230,12 +242,12 @@ const Perfil = () => {
     <div className="page-container">
       {/* Cabecera con menú de usuario */}
       <HeaderUser isAdmin={isAdmin} />
-      <div className="content">
+      <div className="content perfil-content">
         <h1>Mi Perfil</h1>
         {loading ? (
-          <div>Cargando...</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-error">{error}</div>
         ) : (
           <>
             {/* DATOS USUARIO */}
@@ -247,21 +259,21 @@ const Perfil = () => {
                   <div><b>Correo:</b> {user.correo}</div>
                   {/* Botón para eliminar cuenta */}
                   {user.id !== 1 && (
-                    <div style={{ marginTop: 16 }}>
+                    <div className="perfil-eliminar-cuenta">
                       {!showDelete ? (
-                        <button className="btn" style={{ background: '#e53935', color: '#fff' }} onClick={() => setShowDelete(true)}>
+                        <button className="btn perfil-eliminar-btn" onClick={() => setShowDelete(true)}>
                           Eliminar cuenta
                         </button>
                       ) : (
-                        <form onSubmit={handleDeleteUser} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                          <div style={{ color: '#e53935', fontWeight: 600 }}>Esta acción es irreversible. Ingresa tus credenciales para confirmar:</div>
+                        <form onSubmit={handleDeleteUser} className="perfil-eliminar-form">
+                          <div className="perfil-eliminar-aviso">Esta acción es irreversible. Ingresa tus credenciales para confirmar:</div>
                           <input type="email" placeholder="Correo" value={deleteForm.correo} onChange={e => setDeleteForm({ ...deleteForm, correo: e.target.value })} required />
                           <input type="password" placeholder="Contraseña" value={deleteForm.password} onChange={e => setDeleteForm({ ...deleteForm, password: e.target.value })} required />
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button className="btn" type="submit" style={{ background: '#e53935', color: '#fff' }} disabled={deleteLoading}>Confirmar eliminación</button>
+                          <div className="perfil-eliminar-form-botones">
+                            <button className="btn perfil-eliminar-btn" type="submit" disabled={deleteLoading}>Confirmar eliminación</button>
                             <button className="btn" type="button" onClick={() => setShowDelete(false)} disabled={deleteLoading}>Cancelar</button>
                           </div>
-                          {deleteError && <div style={{ color: '#e53935', fontWeight: 500 }}>{deleteError}</div>}
+                          {deleteError && <div className="perfil-eliminar-error">{deleteError}</div>}
                         </form>
                       )}
                     </div>
@@ -282,30 +294,17 @@ const Perfil = () => {
                     try {
                       const token = localStorage.getItem("token");
                       const userId = user.id;
-                      if (form.nombre !== user.nombre) {
-                        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/usuarios/nombre/${userId}`, { nombre: form.nombre }, { headers: { Authorization: `Bearer ${token}` } });
-                      }
-                      if (form.correo !== user.correo) {
-                        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/usuarios/correo/${userId}`, { correo: form.correo }, { headers: { Authorization: `Bearer ${token}` } });
-                      }
-                      if (form.password) {
-                        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/usuarios/contrasena/${userId}`, { contraseña: form.password }, { headers: { Authorization: `Bearer ${token}` } });
-                      }
-                      // Re-login automático
-                      const loginRes = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, { correo: form.correo, contraseña: form.password || undefined });
-                      localStorage.setItem("token", loginRes.data.token);
+                      if (form.password === "") delete form.password;
+                      await axios.put(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${userId}`, form, {
+                        headers: { Authorization: `Bearer ${token}` }
+                      });
+                      setUser({ ...user, ...form });
                       setEditMode(false);
-                      window.location.reload();
                     } catch (err) {
-                      setError("Error al guardar cambios");
+                      setError("Error al actualizar datos");
                     }
                     setLoading(false);
                   }}
-                  onCancel={handleCancel}
-                  loading={loading}
-                  error={error}
-                  submitText="Guardar"
-                  showCancel={true}
                 />
               )}
             </PerfilBlock>
@@ -313,34 +312,33 @@ const Perfil = () => {
             <PerfilBlock title="Lugares visitados" action={<button className="btn" onClick={() => navigate("/lugares-visitados")}>Ver más</button>}>
               <div className="perfil-places-list">
                 <PlacesList 
-                  places={visitados.slice(0, 3)}
+                  places={visitados}
                   onPlaceClick={handlePlaceClick}
                   fechaKey="fecha_visita"
                   textoFecha="Fecha de visita"
                 />
-                {visitados.length === 0 && <div style={{ color: "#aaa" }}>No has visitado ningún lugar aún.</div>}
+                {visitados.length === 0 && <div className="estado-vacio">No has visitado ningún lugar aún.</div>}
               </div>
             </PerfilBlock>
             {/* FAVORITOS */}
             <PerfilBlock title="Favoritos" action={<button className="btn" onClick={() => navigate("/favoritos")}>Ver más</button>}>
               <div className="perfil-places-list">
-                {/* Mostrar favoritos recientes, con fecha de añadido */}
                 <PlacesList 
-                  places={favoritos.slice(0, 3)}
+                  places={favoritos}
                   onPlaceClick={handlePlaceClick}
                   fechaKey="fecha_agregado"
                   textoFecha="Fecha añadido a favoritos"
                 />
-                {favoritos.length === 0 && <div style={{ color: "#aaa" }}>No tienes favoritos aún.</div>}
+                {favoritos.length === 0 && <div className="estado-vacio">No tienes favoritos aún.</div>}
               </div>
             </PerfilBlock>
             {/* COMENTARIOS */}
             <PerfilBlock title="Mis comentarios" action={<button className="btn" onClick={() => navigate("/mis-reseñas")}>Administrar</button>}>
               {comentarios.length === 0 ? (
-                <div style={{ color: "#aaa" }}>No has escrito comentarios aún.</div>
+                <div className="estado-vacio">No has escrito comentarios aún.</div>
               ) : (
                 <ReviewList
-                  reviews={comentarios.slice(0, 3)}
+                  reviews={comentarios}
                   userId={user.id}
                   isAdmin={isAdmin}
                   menuOpen={menuOpen}
@@ -399,9 +397,23 @@ const Perfil = () => {
                     setReviewSubmitting(false);
                   }}
                   StarRating={StarRating}
-                  // Evita navegación al sitio cuando se está editando
-                  onReviewClick={r => {
-                    if (editReviewId !== r.id) handlePlaceClick(r);
+                  onReviewClick={async r => {
+                    if (editReviewId !== r.id) {
+                      const placeId = r.place_id;
+                      if (placeId) {
+                        handlePlaceClick({ place_id: placeId });
+                      } else if (r.id_lugar) {
+                        try {
+                          const token = localStorage.getItem("token");
+                          const lugarRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/lugares/byid/${r.id_lugar}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
+                          if (lugarRes.data && lugarRes.data.place_id) {
+                            handlePlaceClick({ place_id: lugarRes.data.place_id });
+                          }
+                        } catch {}
+                      }
+                    }
                   }}
                 />
               )}

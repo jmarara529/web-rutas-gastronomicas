@@ -1,3 +1,4 @@
+// Importa React y hooks necesarios para el estado y efectos
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import HeaderUser from "../components/HeaderUser";
@@ -5,9 +6,12 @@ import ReviewList from "../components/ReviewList";
 import SearchInputResenas from "../components/SearchInputResenas";
 import { getResenasUsuario, deleteResena } from "../api/resenas";
 import axios from "axios";
+import "../styles/components/ui-common.css";
 
+// Número de comentarios por página
 const REVIEWS_PER_PAGE = 20;
 
+// Componente para mostrar y seleccionar estrellas de calificación
 function StarRating({ value, onChange }) {
   const [hover, setHover] = React.useState(null);
   return (
@@ -27,6 +31,7 @@ function StarRating({ value, onChange }) {
   );
 }
 
+// Función para ordenar los comentarios según el criterio seleccionado
 function sortReviews(reviews, sortType) {
   if (!reviews) return [];
   let sorted = [...reviews];
@@ -50,6 +55,7 @@ function sortReviews(reviews, sortType) {
   return sorted;
 }
 
+// Función para normalizar strings (eliminar tildes y pasar a minúsculas)
 function normalize(str) {
   return (str || "")
     .normalize("NFD")
@@ -57,8 +63,11 @@ function normalize(str) {
     .toLowerCase();
 }
 
+// Componente principal para la administración de comentarios de un usuario
 const AdminComentarios = () => {
+  // Obtiene el userId de la URL
   const { userId } = useParams();
+  // Estados para comentarios, carga, error, menú, orden, búsqueda y paginación
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,6 +77,7 @@ const AdminComentarios = () => {
   const [page, setPage] = useState(1);
   const isAdmin = localStorage.getItem("es_admin") === "true";
 
+  // Efecto para cargar los comentarios del usuario al montar o cambiar userId
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -75,7 +85,7 @@ const AdminComentarios = () => {
       try {
         const token = localStorage.getItem("token");
         const comRes = await getResenasUsuario(token, userId);
-        // Enriquecer comentarios con nombre_lugar si es posible (igual que en MisResenas.js)
+        // Enriquecer comentarios con nombre_lugar si es posible
         const enriched = await Promise.all((comRes || []).map(async (r) => {
           let nombre_lugar = r.nombre_lugar;
           if (!nombre_lugar && r.id_lugar) {
@@ -97,6 +107,7 @@ const AdminComentarios = () => {
     fetchData();
   }, [userId]);
 
+  // Maneja la eliminación de un comentario
   const handleDeleteReview = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este comentario?")) return;
     try {
@@ -109,6 +120,7 @@ const AdminComentarios = () => {
     }
   };
 
+  // Filtra los comentarios según la búsqueda
   const filtered = React.useMemo(() => {
     if (!search.trim()) return comentarios;
     const normSearch = normalize(search);
@@ -117,29 +129,25 @@ const AdminComentarios = () => {
     );
   }, [comentarios, search]);
 
+  // Ordena los comentarios filtrados
   const sorted = sortReviews(filtered, sort);
+  // Calcula la paginación
   const totalPages = Math.ceil(sorted.length / REVIEWS_PER_PAGE);
   const paginated = sorted.slice(
     (page - 1) * REVIEWS_PER_PAGE,
     page * REVIEWS_PER_PAGE
   );
 
+  // Render principal de la página de administración de comentarios
   return (
     <div className="page-container">
+      {/* Cabecera de usuario con menú de admin si corresponde */}
       <HeaderUser isAdmin={isAdmin} />
       <div className="content" style={{ color: "#fff" }}>
         <h1>Comentarios</h1>
-        <div
-          style={{
-            marginBottom: 16,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
+        {/* Barra de búsqueda y selector de orden */}
+        <div className="barra-filtros">
+          <div className="barra-busqueda">
             <SearchInputResenas
               value={search}
               onChange={(val) => {
@@ -148,33 +156,15 @@ const AdminComentarios = () => {
               }}
             />
           </div>
-          <div
-            style={{
-              minWidth: 180,
-              flex: "0 0 220px",
-              textAlign: "right",
-            }}
-          >
-            <label
-              style={{
-                color: "#ff9800",
-                fontWeight: 500,
-                marginRight: 8,
-              }}
-            >
-              Ordenar por:
-            </label>
+          <div className="barra-orden">
+            <label className="barra-orden-label">Ordenar por:</label>
             <select
               value={sort}
               onChange={(e) => {
                 setSort(e.target.value);
                 setPage(1);
               }}
-              style={{
-                padding: 4,
-                borderRadius: 4,
-                width: "60%",
-              }}
+              className="barra-orden-select"
             >
               <option value="reciente">Fecha más reciente</option>
               <option value="antiguo">Fecha más antigua</option>
@@ -185,12 +175,11 @@ const AdminComentarios = () => {
             </select>
           </div>
         </div>
+        {error && <div className="estado-error">{error}</div>}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
-        ) : error ? (
-          <div style={{ color: "#ff9800" }}>{error}</div>
+          <div className="estado-cargando">Cargando...</div>
         ) : paginated.length === 0 ? (
-          <div style={{ color: "#aaa" }}>No ha escrito comentarios aún.</div>
+          <div className="estado-vacio">No hay comentarios aún.</div>
         ) : (
           <ReviewList
             reviews={paginated}
@@ -204,15 +193,7 @@ const AdminComentarios = () => {
           />
         )}
         {totalPages > 1 && (
-          <div
-            style={{
-              marginTop: 24,
-              display: "flex",
-              justifyContent: "center",
-              gap: 8,
-              color: "#fff",
-            }}
-          >
+          <div className="paginacion">
             <button
               className="btn"
               disabled={page === 1}
@@ -220,12 +201,7 @@ const AdminComentarios = () => {
             >
               Anterior
             </button>
-            <span
-              style={{
-                color: "#ff9800",
-                fontWeight: 500,
-              }}
-            >
+            <span className="paginacion-info">
               Página {page} de {totalPages}
             </span>
             <button

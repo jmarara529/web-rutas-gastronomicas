@@ -1,3 +1,8 @@
+/*
+  HeaderHome.css
+  Estilos para el componente de cabecera principal (HeaderHome)
+*/
+
 .header-home-container {
     display: flex;
     justify-content: space-between;
