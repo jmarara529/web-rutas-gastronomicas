@@ -24,9 +24,29 @@
     }
 }
 
+@media (max-width: 550px) {
+  .text-input {
+    font-size: 13px;
+    padding: 6px;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+}
+
 @media (max-width: 500px) {
     .text-input {
         font-size: 14px;
         padding: 6px;
     }
+}
+
+@media (max-width: 400px) {
+  .text-input {
+    font-size: 12px;
+    padding: 5px;
+  }
 }
