@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../styles/responsive-admin.css";
 
 const USUARIOS_POR_PAGINA = 20;
 
@@ -69,11 +70,11 @@ const AdministrarUsuarios = () => {
                       }
                     }}
                   >
-                    <td style={{ padding: 8 }}>{u.id}</td>
-                    <td style={{ padding: 8 }}>{u.nombre}</td>
-                    <td style={{ padding: 8 }}>{u.correo}</td>
-                    <td style={{ padding: 8 }}>{u.es_admin ? "Sí" : "No"}</td>
-                    <td style={{ padding: 8 }}>{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
+                    <td style={{ padding: 8 }} data-label="ID">{u.id}</td>
+                    <td style={{ padding: 8 }} data-label="Nombre">{u.nombre}</td>
+                    <td style={{ padding: 8 }} data-label="Correo">{u.correo}</td>
+                    <td style={{ padding: 8 }} data-label="Administrador">{u.es_admin ? "Sí" : "No"}</td>
+                    <td style={{ padding: 8 }} data-label="Fecha de creación">{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
                   </tr>
                 ))}
               </tbody>

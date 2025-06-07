@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import axios from "axios";
+import "../styles/responsive-admin.css";
 
 const tipoEntidadMap = {
   usuario: "Usuario",
@@ -138,20 +139,18 @@ const HistorialEliminaciones = () => {
             <tbody>
               {historialFiltrado.map((h) => (
                 <tr key={h.id} style={{ borderBottom: "1px solid #333" }}>
-                  <td style={{ padding: 8 }}>
-                    {h.fecha_accion ? (() => {
-                      const d = new Date(h.fecha_accion);
-                      if (isNaN(d)) return '-';
-                      const dia = String(d.getDate()).padStart(2, '0');
-                      const mes = String(d.getMonth() + 1).padStart(2, '0');
-                      const anio = d.getFullYear();
-                      return `${dia}-${mes}-${anio}`;
-                    })() : '-'}
-                  </td>
-                  <td style={{ padding: 8 }}>{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</td>
-                  <td style={{ padding: 8 }}>{h.accion || '-'}</td>
-                  <td style={{ padding: 8 }}>{h.id_entidad}</td>
-                  <td style={{ padding: 8 }}>{h.ejecutado_por || "-"}</td>
+                  <td style={{ padding: 8 }} data-label="Fecha:"><span className="responsive-value">{h.fecha_accion ? (() => {
+                    const d = new Date(h.fecha_accion);
+                    if (isNaN(d)) return '-';
+                    const dia = String(d.getDate()).padStart(2, '0');
+                    const mes = String(d.getMonth() + 1).padStart(2, '0');
+                    const anio = d.getFullYear();
+                    return `${dia}-${mes}-${anio}`;
+                  })() : '-'}</span></td>
+                  <td style={{ padding: 8 }} data-label="Tipo:"><span className="responsive-value">{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</span></td>
+                  <td style={{ padding: 8 }} data-label="Acción:"><span className="responsive-value">{h.accion || '-'}</span></td>
+                  <td style={{ padding: 8 }} data-label="ID Entidad:"><span className="responsive-value">{h.id_entidad}</span></td>
+                  <td style={{ padding: 8 }} data-label="Ejecutado por:"><span className="responsive-value">{h.ejecutado_por || "-"}</span></td>
                 </tr>
               ))}
             </tbody>
