@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../styles/responsive-admin.css";
 
 const USUARIOS_POR_PAGINA = 20;
 
@@ -48,7 +47,8 @@ const AdministrarUsuarios = () => {
           <div style={{ color: "#e53935" }}>{error}</div>
         ) : (
           <>
-            <table style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
+            {/* Vista tabla para pantallas grandes */}
+            <table className="usuarios-table desktop-only" style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
               <thead>
                 <tr style={{ color: "#ff9800", fontWeight: 600 }}>
                   <th style={{ padding: 8 }}>ID</th>
@@ -70,15 +70,36 @@ const AdministrarUsuarios = () => {
                       }
                     }}
                   >
-                    <td style={{ padding: 8 }} data-label="ID">{u.id}</td>
-                    <td style={{ padding: 8 }} data-label="Nombre">{u.nombre}</td>
-                    <td style={{ padding: 8 }} data-label="Correo">{u.correo}</td>
-                    <td style={{ padding: 8 }} data-label="Administrador">{u.es_admin ? "Sí" : "No"}</td>
-                    <td style={{ padding: 8 }} data-label="Fecha de creación">{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
+                    <td style={{ padding: 8 }}>{u.id}</td>
+                    <td style={{ padding: 8 }}>{u.nombre}</td>
+                    <td style={{ padding: 8 }}>{u.correo}</td>
+                    <td style={{ padding: 8 }}>{u.es_admin ? "Sí" : "No"}</td>
+                    <td style={{ padding: 8 }}>{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {/* Vista lista para móviles */}
+            <div className="usuarios-list mobile-only">
+              {paginados.map(u => (
+                <div key={u.id} className="usuarios-list-item" style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, marginBottom: 16, padding: 12, cursor: 'pointer' }}
+                  onClick={() => {
+                    if (u.id === 1) {
+                      setErrorUsuario(`No se puede editar usuario id 1/${u.nombre}`);
+                    } else {
+                      setErrorUsuario("");
+                      navigate(`/admin/usuario/${u.id}`);
+                    }
+                  }}
+                >
+                  <div><b>ID:</b> {u.id}</div>
+                  <div><b>Nombre:</b> {u.nombre}</div>
+                  <div><b>Correo:</b> {u.correo}</div>
+                  <div><b>Administrador:</b> {u.es_admin ? "Sí" : "No"}</div>
+                  <div><b>Fecha de creación:</b> {u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</div>
+                </div>
+              ))}
+            </div>
             {totalPages > 1 && (
               <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
                 <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>

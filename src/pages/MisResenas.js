@@ -107,7 +107,7 @@ const MisResenas = () => {
         <h1>Mis reseñas</h1>
         {/* Barra de búsqueda y ordenación */}
         <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, minWidth: 220, maxWidth: 480 }}>
+          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
             <SearchInputResenas
               value={search}
               onChange={val => { setSearch(val); setPage(1); }}

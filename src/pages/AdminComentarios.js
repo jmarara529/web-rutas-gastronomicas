@@ -139,7 +139,7 @@ const AdminComentarios = () => {
             justifyContent: "space-between",
           }}
         >
-          <div style={{ flex: 1, minWidth: 220, maxWidth: 480 }}>
+          <div style={{ flex: 1, minWidth: 0, maxWidth: 340 }}>
             <SearchInputResenas
               value={search}
               onChange={(val) => {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import HeaderUser from "../components/HeaderUser";
 import axios from "axios";
-import "../styles/responsive-admin.css";
 
 const tipoEntidadMap = {
   usuario: "Usuario",
@@ -126,35 +125,59 @@ const HistorialEliminaciones = () => {
         ) : historialFiltrado.length === 0 ? (
           <div style={{ color: "#aaa" }}>No hay acciones registradas.</div>
         ) : (
-          <table style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
-            <thead>
-              <tr style={{ color: "#ff9800", fontWeight: 600 }}>
-                <th style={{ padding: 8 }}>Fecha</th>
-                <th style={{ padding: 8 }}>Tipo</th>
-                <th style={{ padding: 8 }}>Acción</th>
-                <th style={{ padding: 8 }}>ID Entidad</th>
-                <th style={{ padding: 8 }}>Ejecutado por</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Vista tabla para pantallas grandes */}
+            <table className="historial-table desktop-only" style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
+              <thead>
+                <tr style={{ color: "#ff9800", fontWeight: 600 }}>
+                  <th style={{ padding: 8 }}>Fecha</th>
+                  <th style={{ padding: 8 }}>Tipo</th>
+                  <th style={{ padding: 8 }}>Acción</th>
+                  <th style={{ padding: 8 }}>ID Entidad</th>
+                  <th style={{ padding: 8 }}>Ejecutado por</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historialFiltrado.map((h) => (
+                  <tr key={h.id} style={{ borderBottom: "1px solid #333" }}>
+                    <td style={{ padding: 8 }}>
+                      {h.fecha_accion ? (() => {
+                        const d = new Date(h.fecha_accion);
+                        if (isNaN(d)) return '-';
+                        const dia = String(d.getDate()).padStart(2, '0');
+                        const mes = String(d.getMonth() + 1).padStart(2, '0');
+                        const anio = d.getFullYear();
+                        return `${dia}-${mes}-${anio}`;
+                      })() : '-'}
+                    </td>
+                    <td style={{ padding: 8 }}>{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</td>
+                    <td style={{ padding: 8 }}>{h.accion || '-'}</td>
+                    <td style={{ padding: 8 }}>{h.id_entidad}</td>
+                    <td style={{ padding: 8 }}>{h.ejecutado_por || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {/* Vista lista para móviles */}
+            <div className="historial-list mobile-only">
               {historialFiltrado.map((h) => (
-                <tr key={h.id} style={{ borderBottom: "1px solid #333" }}>
-                  <td style={{ padding: 8 }} data-label="Fecha:"><span className="responsive-value">{h.fecha_accion ? (() => {
+                <div key={h.id} className="historial-list-item" style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, marginBottom: 16, padding: 12 }}>
+                  <div><b>Fecha:</b> {h.fecha_accion ? (() => {
                     const d = new Date(h.fecha_accion);
                     if (isNaN(d)) return '-';
                     const dia = String(d.getDate()).padStart(2, '0');
                     const mes = String(d.getMonth() + 1).padStart(2, '0');
                     const anio = d.getFullYear();
                     return `${dia}-${mes}-${anio}`;
-                  })() : '-'}</span></td>
-                  <td style={{ padding: 8 }} data-label="Tipo:"><span className="responsive-value">{tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</span></td>
-                  <td style={{ padding: 8 }} data-label="Acción:"><span className="responsive-value">{h.accion || '-'}</span></td>
-                  <td style={{ padding: 8 }} data-label="ID Entidad:"><span className="responsive-value">{h.id_entidad}</span></td>
-                  <td style={{ padding: 8 }} data-label="Ejecutado por:"><span className="responsive-value">{h.ejecutado_por || "-"}</span></td>
-                </tr>
+                  })() : '-'}</div>
+                  <div><b>Tipo:</b> {tipoEntidadMap[h.tipo_entidad] || h.tipo_entidad}</div>
+                  <div><b>Acción:</b> {h.accion || '-'}</div>
+                  <div><b>ID Entidad:</b> {h.id_entidad}</div>
+                  <div><b>Ejecutado por:</b> {h.ejecutado_por || "-"}</div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>

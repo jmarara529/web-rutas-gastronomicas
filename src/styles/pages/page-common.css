@@ -127,3 +127,48 @@ body {
         padding: 8px;
     }
 }
+
+.usuarios-list-item {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.usuarios-list-item b {
+  color: #ff9800;
+  font-weight: 600;
+  margin-right: 4px;
+}
+@media (max-width: 900px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+}
+@media (min-width: 901px) {
+  .desktop-only {
+    display: block !important;
+  }
+  .mobile-only {
+    display: none !important;
+  }
+}
+.historial-list-item {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.historial-list-item b {
+  color: #ff9800;
+  font-weight: 600;
+  margin-right: 4px;
+}
