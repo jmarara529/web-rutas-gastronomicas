@@ -22,13 +22,3 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# dotenv environment variables file
-.env
-.env.test
-
-#docker
-docker-compose.yml
-Dockerfile
-
-#nginx
-nginx.conf
