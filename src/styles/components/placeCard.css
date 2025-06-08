@@ -1,0 +1,23 @@
+/* placeCard.css - Estilos para PlaceCard y sus elementos */
+
+.place-card {
+  width: 98%;
+  margin: 0 auto;
+  /* Puedes agregar más estilos responsivos si lo deseas */
+}
+
+.place-card-photo {
+  /* Ejemplo: puedes agregar estilos aquí si lo necesitas */
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+}
+.place-card-photo--loading {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.place-card-fecha {
+  font-size: 13px;
+  color: #bbb;
+  margin: 4px 0 0 0;
+}

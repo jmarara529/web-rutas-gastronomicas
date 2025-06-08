@@ -84,17 +84,17 @@ const AdministrarUsuarios = () => {
       <div className="content">
         <h1>Administrar Usuarios</h1>
         {/* Mensaje de error específico al intentar editar usuario protegido */}
-        {errorUsuario && <div style={{ color: "#e53935", margin: '12px 0', fontWeight: 600 }}>{errorUsuario}</div>}
+        {errorUsuario && <div className="admin-usuarios-error">{errorUsuario}</div>}
         {/* Mensaje de carga o error general */}
         {loading ? (
-          <div style={{ color: "#ff9800" }}>Cargando...</div>
+          <div className="admin-usuarios-cargando">Cargando...</div>
         ) : error ? (
-          <div style={{ color: "#e53935" }}>{error}</div>
+          <div className="admin-usuarios-error-general">{error}</div>
         ) : (
           <>
             {/* Barra de búsqueda y filtro de admin */}
             <div className="admin-usuarios-barra-filtros">
-              <div className="admin-usuarios-barra-busqueda" style={{ position: 'relative' }}>
+              <div className="admin-usuarios-barra-busqueda">
                 <input
                   className="text-input"
                   type="text"
@@ -128,20 +128,20 @@ const AdministrarUsuarios = () => {
               </div>
             </div>
             {/* Vista tabla para pantallas grandes */}
-            <table className="usuarios-table desktop-only" style={{ width: "100%", color: "#fff", background: "rgba(0,0,0,0.4)", borderRadius: 8, borderCollapse: "collapse", marginTop: 24 }}>
+            <table className="usuarios-table desktop-only">
               <thead>
-                <tr style={{ color: "#ff9800", fontWeight: 600 }}>
-                  <th style={{ padding: 8 }}>ID</th>
-                  <th style={{ padding: 8 }}>Nombre</th>
-                  <th style={{ padding: 8 }}>Correo</th>
-                  <th style={{ padding: 8 }}>Administrador</th>
-                  <th style={{ padding: 8 }}>Fecha de creación</th>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>Administrador</th>
+                  <th>Fecha de creación</th>
                 </tr>
               </thead>
               <tbody>
                 {/* Fila por cada usuario, permite navegar a la edición salvo el usuario protegido */}
                 {paginados.map(u => (
-                  <tr key={u.id} style={{ borderBottom: "1px solid #333", cursor: "pointer" }}
+                  <tr key={u.id}
                     onClick={() => {
                       if (u.id === 1) {
                         setErrorUsuario(`No se puede editar usuario id 1/${u.nombre}`);
@@ -151,11 +151,11 @@ const AdministrarUsuarios = () => {
                       }
                     }}
                   >
-                    <td style={{ padding: 8 }}>{u.id}</td>
-                    <td style={{ padding: 8 }}>{u.nombre}</td>
-                    <td style={{ padding: 8 }}>{u.correo}</td>
-                    <td style={{ padding: 8 }}>{u.es_admin ? "Sí" : "No"}</td>
-                    <td style={{ padding: 8 }}>{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
+                    <td>{u.id}</td>
+                    <td>{u.nombre}</td>
+                    <td>{u.correo}</td>
+                    <td>{u.es_admin ? "Sí" : "No"}</td>
+                    <td>{u.fecha_creacion ? new Date(u.fecha_creacion).toLocaleDateString() : "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -163,7 +163,7 @@ const AdministrarUsuarios = () => {
             {/* Vista lista para móviles */}
             <div className="usuarios-list mobile-only">
               {paginados.map(u => (
-                <div key={u.id} className="usuarios-list-item" style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, marginBottom: 16, padding: 12, cursor: 'pointer' }}
+                <div key={u.id} className="usuarios-list-item"
                   onClick={() => {
                     if (u.id === 1) {
                       setErrorUsuario(`No se puede editar usuario id 1/${u.nombre}`);
@@ -183,9 +183,9 @@ const AdministrarUsuarios = () => {
             </div>
             {/* Paginación si hay varias páginas */}
             {totalPages > 1 && (
-              <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8, color: '#fff' }}>
+              <div className="admin-usuarios-paginacion">
                 <button className="btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span style={{ color: "#ff9800", fontWeight: 500 }}>Página {page} de {totalPages}</span>
+                <span className="admin-usuarios-paginacion-info">Página {page} de {totalPages}</span>
                 <button className="btn" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
               </div>
             )}

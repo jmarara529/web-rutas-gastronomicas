@@ -56,3 +56,51 @@
   width: 18px;
   height: 18px;
 }
+.admin-usuarios-error {
+  color: #e53935;
+  margin: 12px 0;
+  font-weight: 600;
+}
+.admin-usuarios-cargando {
+  color: #ff9800;
+}
+.admin-usuarios-error-general {
+  color: #e53935;
+}
+.usuarios-table {
+  width: 100%;
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  border-radius: 8px;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+.usuarios-table thead tr {
+  color: #ff9800;
+  font-weight: 600;
+}
+.usuarios-table th, .usuarios-table td {
+  padding: 8px;
+}
+.usuarios-table tbody tr {
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+.usuarios-list-item {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  cursor: pointer;
+}
+.admin-usuarios-paginacion {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+}
+.admin-usuarios-paginacion-info {
+  color: #ff9800;
+  font-weight: 500;
+}

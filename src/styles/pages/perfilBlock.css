@@ -3,28 +3,64 @@
   border-radius: 14px;
   box-shadow: 0 2px 12px #0002;
   margin-bottom: 32px;
-  padding: 24px 20px 20px 20px;
   transition: box-shadow 0.2s;
   color: #fff; /* Asegura texto blanco en todos los bloques */
+  width: 100%;
+  min-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  aspect-ratio: unset !important; /* Eliminar relación de aspecto fija */
 }
 .perfil-block-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 .perfil-block-header h2 {
   margin: 0;
   font-size: 1.3rem;
   color: #ff9800;
-  letter-spacing: 0.5px;
+  margin-left: 12px;
+}
+@media (max-width: 600px) {
+  .perfil-block-header h2 {
+    margin-left: 6px;
+  }
 }
 .perfil-block-action {
   margin-left: 16px;
 }
+@media (max-width: 430px) {
+  .perfil-block-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .perfil-block-header h2 {
+    margin-left: 0;
+    margin-bottom: 2px;
+  }
+  .perfil-block-action {
+    margin-left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+  }
+}
 .perfil-block-content {
-  min-height: 32px;
-  color: #fff; /* Fuerza texto blanco en el contenido */
+  flex: 1 1 auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 80px; /* Antes 32px, ahora más alto */
+  padding-bottom: 16px;
 }
 .perfil-block label, .perfil-block b, .perfil-block div {
   color: #fff;
@@ -34,8 +70,26 @@
   background: #fff !important;
   caret-color: #000 !important;
 }
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .perfil-block {
-    padding: 16px 8px 12px 8px;
+    max-width: 100vw;
+    min-width: 0;
+  }
+  .perfil-block-content {
+    min-height: 64px;
+    padding-bottom: 12px;
+  }
+}
+
+@media (max-width: 500px) {
+  .perfil-block {
+    max-width: 100vw;
+    min-width: 0;
+    padding-left: 2vw;
+    padding-right: 2vw;
+  }
+  .perfil-block-content {
+    min-height: 48px;
+    padding-bottom: 8px;
   }
 }

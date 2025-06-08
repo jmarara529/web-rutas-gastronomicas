@@ -19,13 +19,6 @@
   gap: 8px;
   margin-top: 8px;
 }
-.perfiladmin-eliminar-error {
-  color: #e53935;
-  font-weight: 500;
-}
-.perfiladmin-vacio {
-  color: #aaa;
-}
 .perfiladmin-extra-admin {
   display: flex;
   align-items: center;

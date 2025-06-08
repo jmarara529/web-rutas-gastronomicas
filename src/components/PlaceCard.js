@@ -1,6 +1,7 @@
 // Importa React y hooks necesarios
 import React, { useState } from "react";
 import "../styles/pages/search.css";
+import "../styles/components/placeCard.css";
 
 // Componente para mostrar la información de un lugar en una tarjeta visual
 // Recibe props: place (objeto del lugar), onClick (handler al hacer click), onAddFavorite (handler para agregar a favoritos), fechaVisita (fecha opcional), textoFecha (texto personalizado para la fecha)
@@ -83,8 +84,7 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
       <img
         src={imgSrc}
         alt={name}
-        className="place-card-photo"
-        style={{ opacity: imgLoaded ? 1 : 0.5, transition: "opacity 0.2s" }}
+        className={`place-card-photo${imgLoaded ? '' : ' place-card-photo--loading'}`}
         onLoad={() => setImgLoaded(true)}
         onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/images/nophoto.png"; setImgLoaded(true); }}
       />
@@ -92,7 +92,7 @@ const PlaceCard = ({ place, onClick, onAddFavorite, fechaVisita, textoFecha }) =
         <div className="place-card-title">{name}</div>
         {/* Muestra la fecha de visita si está disponible */}
         {fechaVisitaStr && (
-          <div style={{ fontSize: 13, color: '#bbb', margin: '4px 0 0 0' }}>{fechaVisitaStr}</div>
+          <div className="place-card-fecha">{fechaVisitaStr}</div>
         )}
         <div className="place-card-rating">⭐ {rating}</div>
       </div>

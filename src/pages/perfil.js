@@ -6,9 +6,9 @@ import React, { useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
 import PerfilBlock from "../components/PerfilBlock";
 import "../styles/pages/page-common.css";
-import "../styles/pages/search.css";
-import "../styles/pages/perfil.css";
 import "../styles/components/ui-common.css";
+import "../styles/pages/perfilBlock.css";
+import "../styles/pages/perfil.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DynamicUserForm from "../components/DynamicUserForm";
@@ -228,11 +228,21 @@ const Perfil = () => {
     setDeleteLoading(true);
     try {
       const token = localStorage.getItem("token");
+      if (deleteForm.correo !== user.correo) {
+        setDeleteError("El correo no coincide con el usuario actual");
+        setDeleteLoading(false);
+        return;
+      }
       await deleteUsuario(user.id, token);
       setDeleteLoading(false);
+      setDeleteError("");
+      alert("Usuario eliminado correctamente. Cerrando sesión...");
+      localStorage.removeItem("token");
+      localStorage.removeItem("es_admin");
+      localStorage.removeItem("user_id");
       window.location.href = "/login";
     } catch (err) {
-      setDeleteError("No se pudo eliminar la cuenta");
+      setDeleteError("No se pudo eliminar la cuenta. Intenta de nuevo más tarde.");
       setDeleteLoading(false);
     }
   };

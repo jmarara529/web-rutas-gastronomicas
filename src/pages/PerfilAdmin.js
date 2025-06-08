@@ -11,6 +11,7 @@ import { getFavoritos } from "../api/favoritos";
 import { getVisitados } from "../api/visitados";
 import { getResenasUsuario, deleteResena } from "../api/resenas";
 import "../styles/pages/perfiladmin.css";
+import "../styles/pages/perfilBlock.css";
 
 const PerfilAdmin = () => {
   const { userId } = useParams();

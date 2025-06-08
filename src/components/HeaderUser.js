@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/components/HeaderHome.css";
+import "../styles/components/headerUser.css";
 
 // Componente de cabecera para usuarios autenticados
 // Recibe la prop isAdmin para mostrar opciones de administrador
@@ -45,7 +46,7 @@ const HeaderUser = ({ isAdmin }) => {
                 {isAdmin && <li><Link to="/historial-eliminaciones">Historial de Acciones</Link></li>}
                 {isAdmin && <li><Link to="/administrar-usuarios">administrar usuarios</Link></li>}
                 {/* Botón para cerrar sesión */}
-                <span className="header-user-link" onClick={handleLogout} tabIndex={0} role="button" style={{ cursor: 'pointer' }}>
+                <span className="header-user-link" onClick={handleLogout} tabIndex={0} role="button">
                   Cerrar sesión
                 </span>
             </ul>

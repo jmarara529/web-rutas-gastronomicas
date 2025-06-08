@@ -197,47 +197,6 @@
   color: #ff9800;
   text-decoration: underline;
 }
-.reviews-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.review-google, .review-app {
-  background: #232323;
-  border-radius: 8px;
-  margin: 10px 0;
-  padding: 12px 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  position: relative;
-}
-.review-app button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  color: #ff9800;
-}
-.review-app .review-menu {
-  position: absolute;
-  top: 24px;
-  right: 0;
-  background: #232323;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  z-index: 10;
-  min-width: 100px;
-}
-.review-app .review-menu div {
-  padding: 8px 16px;
-  cursor: pointer;
-}
-.review-app .review-menu div:hover {
-  background: #ff9800;
-  color: #181818;
-}
-.review-app .review-menu .delete {
-  color: #e53935;
-}
 .tabs-container {
   margin-top: 32px;
 }
@@ -353,6 +312,10 @@
   .place-card-center {
     height: auto;
     padding: 0;
+    align-items: center !important;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
   .place-card-actions {
     flex-direction: row;
@@ -364,4 +327,33 @@
   .place-detail {
     padding: 10px;
   }
+  .place-card-title {
+    text-align: center !important;
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: block;
+  }
 }
+
+/* Imagen principal del detalle de sitio responsive y centrada */
+.place-detail-photo {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: block;
+  object-fit: cover;
+  background: #333;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 500px) {
+  .place-detail-photo {
+    max-width: 98vw;
+    border-radius: 8px;
+  }
+}
+
+/* Estilos de reseñas movidos a reviewList.css */

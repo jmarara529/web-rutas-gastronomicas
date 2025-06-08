@@ -1,42 +1,49 @@
+/* El contenido de este archivo ha sido eliminado intencionalmente.
+   Los estilos de los bloques de perfil ahora están unificados en perfilBlock.css */
+
+/* perfil.css - Estilos específicos para la página de perfil de usuario */
+
 .perfil-content {
-  color: #fff;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 12px;
 }
-.perfil-places-list {
-  background: rgba(0,0,0,0.3);
-  border-radius: 8px;
-  margin-bottom: 16px;
-  padding: 12px;
-}
-.perfil-star-rating {
-  font-size: 24px;
-  cursor: pointer;
-  color: #ff9800;
-}
-.perfil-star {
-  margin-right: 2px;
-}
+
 .perfil-eliminar-cuenta {
   margin-top: 16px;
 }
+
 .perfil-eliminar-btn {
   background: #e53935 !important;
   color: #fff !important;
 }
+
 .perfil-eliminar-form {
+  margin-top: 8px;
+  background: #232323;
+  border-radius: 8px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
 }
+
 .perfil-eliminar-aviso {
   color: #e53935;
   font-weight: 600;
 }
+
 .perfil-eliminar-form-botones {
   display: flex;
   gap: 8px;
+  margin-top: 8px;
 }
+
 .perfil-eliminar-error {
   color: #e53935;
   font-weight: 500;
+}
+
+.perfil-places-list .place-card-title {
+  color: #ff9800 !important;
 }

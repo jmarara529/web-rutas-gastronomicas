@@ -7,7 +7,7 @@ import HeaderUser from "../components/HeaderUser";
 import ReviewList from "../components/ReviewList";
 import axios from "axios";
 import "../styles/pages/page-common.css";
-// import "../styles/pages/misresenas.css"; // Archivo no existe, se comenta para evitar error
+import "../styles/pages/misresenas.css";
 import "../styles/components/ui-common.css";
 import SearchInputResenas from "../components/SearchInputResenas";
 
@@ -106,7 +106,7 @@ const MisResenas = () => {
   return (
     <div className="page-container">
       <HeaderUser isAdmin={isAdmin} />
-      <div className="content perfil-content">
+      <div className="content misresenas-content">
         <h1>Mis reseñas</h1>
         {/* Barra de búsqueda y ordenación */}
         <div className="barra-filtros">
@@ -136,7 +136,7 @@ const MisResenas = () => {
           paginated.length === 0 ? (
             <div className="estado-vacio">No has escrito reseñas aún.</div>
           ) : (
-            <div className="perfil-places-list">
+            <div className="misresenas-list">
               <ReviewList
                 reviews={paginated}
                 userId={userId}

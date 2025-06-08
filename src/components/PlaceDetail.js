@@ -316,7 +316,7 @@ const PlaceDetail = ({ place }) => {
             <li key={i} className="review-app" style={{ position: 'relative' }}>
               <div style={{ fontWeight: 500 }}>{userLabel}</div>
               <div>⭐ {r.calificacion}</div>
-              <div style={{ fontStyle: "italic" }}>{r.comentario}</div>
+              <div className="review-comentario">{r.comentario}</div>
               <div style={{ fontSize: 12, color: "#aaa" }}>{r.fecha}</div>
               {(canEdit || canDelete) && (
                 <div className="review-menu-trigger" style={{ position: 'absolute', top: 8, right: 8 }}>
@@ -366,7 +366,7 @@ const PlaceDetail = ({ place }) => {
       <img
         src={imgSrc}
         alt={name}
-        style={{ width: 400, borderRadius: 12, marginBottom: 16, opacity: imgLoaded ? 1 : 0.5, transition: "opacity 0.2s" }}
+        className="place-detail-photo"
         onLoad={() => setImgLoaded(true)}
         onError={() => setImgLoaded(true)}
       />

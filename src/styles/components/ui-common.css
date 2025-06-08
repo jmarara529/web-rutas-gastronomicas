@@ -38,10 +38,11 @@
 .estado-cargando {
   color: #ff9800;
 }
-.estado-error {
-  color: #ff9800;
+.estado-error, .perfiladmin-eliminar-error {
+  color: #e53935;
+  font-weight: 500;
 }
-.estado-vacio {
+.estado-vacio, .perfiladmin-vacio {
   color: #aaa;
 }
 

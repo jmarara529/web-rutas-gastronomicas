@@ -1,5 +1,6 @@
 // Importa React para usar JSX
 import React from "react";
+import "../styles/components/reviewList.css";
 
 // Componente reutilizable para mostrar y gestionar una lista de reseñas con menú de opciones y edición inline
 const ReviewList = ({
@@ -36,7 +37,7 @@ const ReviewList = ({
       // Si la reseña está en modo edición
       const isEditing = editReviewId === r.id;
       return (
-        <li key={i} className="review-app" style={{ position: 'relative', cursor: r.id_lugar ? 'pointer' : 'default' }}
+        <li key={i} className="review-app"
           // Permite navegación al detalle del lugar si la reseña tiene id_lugar
           onClick={r.id_lugar ? async (e) => {
             // Evita navegación si el click fue en el menú de opciones o si está en modo edición
@@ -57,18 +58,18 @@ const ReviewList = ({
           } : undefined}
         >
           {/* Nombre del usuario o lugar */}
-          <div style={{ fontWeight: 500 }}>{userLabel}</div>
+          <div className="review-label">{userLabel}</div>
           {/* Calificación */}
-          <div>⭐ {r.calificacion}</div>
+          <div className="review-stars">⭐ {r.calificacion}</div>
           {/* Comentario */}
-          <div style={{ fontStyle: "italic" }}>{r.comentario}</div>
+          <div className="review-comentario">{r.comentario}</div>
           {/* Fecha de la reseña */}
-          <div style={{ fontSize: 12, color: "#aaa" }}>{r.fecha}</div>
+          <div className="review-fecha">{r.fecha}</div>
           {/* Menú de opciones para editar/borrar si corresponde */}
           {(canEdit || canDelete) && (
-            <div className="review-menu-trigger" style={{ position: 'absolute', top: 8, right: 8 }}>
+            <div className="review-menu-trigger">
               <button
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#ff9800' }}
+                className="review-menu-btn"
                 onClick={() => setMenuOpen(menuOpen === i ? null : i)}
                 title="Opciones"
               >
@@ -76,30 +77,30 @@ const ReviewList = ({
               </button>
               {/* Menú desplegable de opciones */}
               {menuOpen === i && (
-                <div className="review-menu" style={{ position: 'absolute', top: 24, right: 0 }}>
-                  {canEdit && <div className="edit" style={{ padding: '8px 16px', cursor: 'pointer' }} onClick={() => onEditClick(r, i)}>Editar</div>}
-                  {canDelete && <div className="delete" style={{ padding: '8px 16px', cursor: 'pointer', color: '#e53935' }} onClick={() => { onDeleteReview(r.id); setMenuOpen(null); }}>Eliminar</div>}
+                <div className="review-menu">
+                  {canEdit && <div className="edit" onClick={() => onEditClick(r, i)}>Editar</div>}
+                  {canDelete && <div className="delete" onClick={() => { onDeleteReview(r.id); setMenuOpen(null); }}>Eliminar</div>}
                 </div>
               )}
             </div>
           )}
           {/* Formulario de edición inline si la reseña está en modo edición */}
           {editReviewId === r.id && (
-            <div style={{ marginTop: 12, background: '#181818', borderRadius: 6, padding: 12 }}>
+            <div className="review-edit-form">
               <textarea
                 value={editReviewText}
                 onChange={e => setEditReviewText(e.target.value)}
                 rows={3}
-                style={{ width: '100%', marginBottom: 8 }}
+                className="review-edit-textarea"
               />
-              <div style={{ marginBottom: 8 }}>
+              <div className="review-edit-stars">
                 <span>Calificación: </span>
                 {StarRating && <StarRating value={editReviewStars} onChange={setEditReviewStars} />}
               </div>
-              <button onClick={onEditSave} disabled={reviewSubmitting} style={{ marginRight: 8 }}>Guardar</button>
-              <button onClick={onEditCancel} disabled={reviewSubmitting}>Cancelar</button>
+              <button className="review-edit-btn" onClick={onEditSave} disabled={reviewSubmitting}>Guardar</button>
+              <button className="review-edit-btn" onClick={onEditCancel} disabled={reviewSubmitting}>Cancelar</button>
               {/* Mensaje de error si ocurre al editar */}
-              {reviewError && <div style={{ color: '#e53935', marginTop: 8 }}>{reviewError}</div>}
+              {reviewError && <div className="review-edit-error">{reviewError}</div>}
             </div>
           )}
         </li>
